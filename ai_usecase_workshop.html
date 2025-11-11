@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 업무 활용 사례 선택 워크샵</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .instruction {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .instruction h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .instruction p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .counter {
+            text-align: center;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .use-case-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 18px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            color: #333;
+            text-align: left;
+            font-family: 'Malgun Gothic', sans-serif;
+            position: relative;
+        }
+        
+        .use-case-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .use-case-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            font-weight: 600;
+        }
+        
+        .use-case-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .submit-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 40px;
+        }
+        
+        .results-section.active {
+            display: block;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .result-item h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .result-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .result-item textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Malgun Gothic', sans-serif;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        .result-item textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .export-section {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .export-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        .export-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .reset-btn {
+            background: #f44336;
+            color: white;
+            border: 2px solid #f44336;
+        }
+        
+        .reset-btn:hover {
+            background: #d32f2f;
+            border-color: #d32f2f;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .use-cases-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI 업무 활용 사례 선택 워크샵</h1>
+            <p>일상 업무에서 AI를 활용할 수 있는 50가지 사례 중<br>본인의 업무와 관련된 항목을 최대 5개까지 선택해주세요</p>
+        </div>
+        
+        <div class="content">
+            <div class="instruction">
+                <h2>📋 진행 방법</h2>
+                <p>
+                    1. 아래 50개의 AI 활용 사례 중 본인의 업무와 관련이 있는 항목을 <strong>최대 5개</strong>까지 선택하세요<br>
+                    2. 선택이 완료되면 <strong>"제출"</strong> 버튼을 클릭하세요<br>
+                    3. 선택한 각 항목에 대해 <strong>현재 AI 사용 여부와 그 이유</strong>를 자유롭게 작성하세요
+                </p>
+            </div>
+            
+            <div class="counter" id="counter">선택된 항목: 0 / 5</div>
+            
+            <div class="use-cases-grid" id="useCasesGrid"></div>
+            
+            <div class="submit-section">
+                <button class="submit-btn" id="submitBtn" disabled>제출하기</button>
+            </div>
+            
+            <div class="results-section" id="resultsSection">
+                <div class="instruction">
+                    <h2>✍️ 선택하신 항목에 대해 작성해주세요</h2>
+                    <p>각 항목에 대해 현재 AI를 사용하고 있는지, 사용하지 않는다면 그 이유는 무엇인지 자유롭게 작성해주세요.</p>
+                </div>
+                
+                <div id="resultsContainer"></div>
+                
+                <div class="export-section">
+                    <button class="export-btn" onclick="exportResults()">📥 결과 다운로드 (텍스트)</button>
+                    <button class="export-btn reset-btn" onclick="resetForm()">🔄 다시 선택하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const useCases = [
+            "이메일 작성",
+            "회의록 작성 및 정리",
+            "업무 보고서 작성",
+            "설명서 작성",
+            "논문 요약",
+            "문서 요약",
+            "코칭 및 상담",
+            "개선 아이디어 도출",
+            "프로세스 최적화 제안",
+            "평가 기준 개발",
+            "비교 분석",
+            "프로필 생성",
+            "리뷰 템플릿 작성",
+            "위기 상황 커뮤니케이션",
+            "회의 안건 작성",
+            "데이터 분석 보고서 작성",
+            "브리핑 자료 작성",
+            "불만 대응 이메일 작성",
+            "보고서 분석",
+            "공고 작성",
+            "평가표 생성",
+            "연간 리뷰 준비",
+            "피드백 감성 분석",
+            "리스크 시나리오 생성",
+            "대화 스크립트 작성",
+            "매뉴얼 작성",
+            "계획서 작성",
+            "FAQ 생성",
+            "커뮤니케이션 가이드라인 개발",
+            "설문 질문 생성",
+            "제안서 작성",
+            "공지자료 작성",
+            "업무 흐름 개선",
+            "온보딩 자료 작성",
+            "교육 자료 개발",
+            "콘텐츠 기획",
+            "글 작성",
+            "뉴스레터 작성",
+            "홍보 문구 작성",
+            "런칭 계획 수립",
+            "조사 보고서 작성",
+            "세그멘테이션 분석",
+            "KPI 대시보드 설계",
+            "예산 계획 수립",
+            "계약서 검토",
+            "정책 문서 작성",
+            "번역 및 현지화",
+            "기술 문서 작성",
+            "변화 관리 커뮤니케이션",
+            "팀 활동 아이디어"
+        ];
+        
+        let selectedUseCases = [];
+        const maxSelection = 5;
+        
+        function renderUseCases() {
+            const grid = document.getElementById('useCasesGrid');
+            grid.innerHTML = '';
+            
+            useCases.forEach((useCase, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'use-case-btn';
+                btn.textContent = useCase;
+                btn.onclick = () => toggleSelection(index, btn);
+                grid.appendChild(btn);
+            });
+        }
+        
+        function toggleSelection(index, btn) {
+            const useCase = useCases[index];
+            
+            if (selectedUseCases.includes(useCase)) {
+                selectedUseCases = selectedUseCases.filter(item => item !== useCase);
+                btn.classList.remove('selected');
+            } else {
+                if (selectedUseCases.length < maxSelection) {
+                    selectedUseCases.push(useCase);
+                    btn.classList.add('selected');
+                }
+            }
+            
+            updateUI();
+        }
+        
+        function updateUI() {
+            const counter = document.getElementById('counter');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            counter.textContent = `선택된 항목: ${selectedUseCases.length} / ${maxSelection}`;
+            submitBtn.disabled = selectedUseCases.length === 0;
+            
+            // Disable unselected buttons if max reached
+            const buttons = document.querySelectorAll('.use-case-btn');
+            buttons.forEach(btn => {
+                if (!btn.classList.contains('selected') && selectedUseCases.length >= maxSelection) {
+                    btn.classList.add('disabled');
+                    btn.style.pointerEvents = 'none';
+                } else {
+                    btn.classList.remove('disabled');
+                    btn.style.pointerEvents = 'auto';
+                }
+            });
+        }
+        
+        document.getElementById('submitBtn').onclick = function() {
+            if (selectedUseCases.length === 0) return;
+            
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '';
+            
+            selectedUseCases.forEach((useCase, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.innerHTML = `
+                    <h3>${index + 1}. ${useCase}</h3>
+                    <label>현재 이 업무에서 AI를 사용하고 있나요? 사용한다면 어떻게 사용하고 있는지, 사용하지 않는다면 그 이유는 무엇인지 자유롭게 작성해주세요:</label>
+                    <textarea id="response_${index}" placeholder="예시: 현재 ChatGPT를 사용하여 초안을 작성하고 있습니다. 시간이 약 50% 절약되지만, 때때로 톤앤매너 조정이 필요합니다..."></textarea>
+                `;
+                resultsContainer.appendChild(resultItem);
+            });
+            
+            document.getElementById('resultsSection').classList.add('active');
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        function exportResults() {
+            let exportText = '=== AI 업무 활용 사례 워크샵 결과 ===\n\n';
+            exportText += `작성일시: ${new Date().toLocaleString('ko-KR')}\n\n`;
+            exportText += '='.repeat(50) + '\n\n';
+            
+            selectedUseCases.forEach((useCase, index) => {
+                const response = document.getElementById(`response_${index}`).value;
+                exportText += `${index + 1}. ${useCase}\n\n`;
+                exportText += `응답:\n${response || '(작성되지 않음)'}\n\n`;
+                exportText += '-'.repeat(50) + '\n\n';
+            });
+            
+            const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI활용사례_워크샵결과_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+        }
+        
+        function resetForm() {
+            if (confirm('처음부터 다시 시작하시겠습니까? 작성한 내용이 모두 삭제됩니다.')) {
+                selectedUseCases = [];
+                document.getElementById('resultsSection').classList.remove('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                renderUseCases();
+                updateUI();
+            }
+        }
+        
+        // Initialize
+        renderUseCases();
+    </script>
+</body>
+</html>
