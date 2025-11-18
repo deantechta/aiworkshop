@@ -1,0 +1,2473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>AI 활용 레벨 진단 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .instruction {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .instruction h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .instruction p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .counter {
+            text-align: center;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .use-case-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 18px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            color: #333;
+            text-align: center;
+            font-family: 'Malgun Gothic', sans-serif;
+            position: relative;
+        }
+        
+        .use-case-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .use-case-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            font-weight: 600;
+        }
+        
+        .use-case-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .submit-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .level-selection-section {
+            display: none;
+            margin-top: 40px;
+        }
+        
+        .level-selection-section.active {
+            display: block;
+        }
+        
+        .level-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .level-item h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        
+        .level-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .level-btn {
+            background: white;
+            border: 3px solid #e0e0e0;
+            padding: 20px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .level-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .level-btn.selected {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-color: #ffd700;
+            color: #333;
+            transform: scale(1.05);
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 40px;
+        }
+        
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .overall-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .overall-result h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        .level-badge {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+        
+        .score-display {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        
+        .badges-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            backdrop-filter: blur(10px);
+        }
+        
+        .detail-result {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+        
+        .detail-result h3 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .current-level {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .level-example {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ddd;
+        }
+        
+        .level-example.current {
+            background: #fff9e6;
+            border-left-color: #ffd700;
+        }
+        
+        .level-example h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .level-example .example-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #555;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .level-example .description {
+            color: #666;
+            font-size: 0.95em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .export-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .export-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        .export-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .reset-btn {
+            background: #f44336;
+            color: white;
+            border: 2px solid #f44336;
+        }
+        
+        .reset-btn:hover {
+            background: #d32f2f;
+            border-color: #d32f2f;
+        }
+        
+        /* 프롬프트 사전 모달 스타일 */
+        .prompt-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .close-btn:hover {
+            opacity: 0.7;
+        }
+
+        .modal-search {
+            padding: 20px 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-search input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .modal-search input:focus {
+            border-color: #667eea;
+        }
+
+        .modal-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .category-nav {
+            width: 250px;
+            padding: 20px;
+            border-right: 1px solid #eee;
+            background: #f8f9fa;
+            overflow-y: auto;
+        }
+
+        .category-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border: none;
+            background: white;
+            color: #333;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .category-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .prompt-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .prompt-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .prompt-item:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .prompt-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prompt-title {
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .prompt-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .bookmark-btn {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .bookmark-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .bookmark-btn.bookmarked {
+            color: #ffd700;
+        }
+
+        .prompt-details {
+            display: none;
+            padding: 20px;
+        }
+
+        .prompt-details.active {
+            display: block;
+        }
+
+        .prompt-level {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+        }
+
+        .prompt-level.basic {
+            background: #f8f9ff;
+            border-left-color: #4CAF50;
+        }
+
+        .prompt-level.intermediate {
+            background: #fff8e1;
+            border-left-color: #FF9800;
+        }
+
+        .prompt-level.advanced {
+            background: #fff3e0;
+            border-left-color: #f44336;
+        }
+
+        .prompt-level h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .prompt-text {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            margin: 8px 0;
+        }
+
+        .prompt-desc {
+            font-size: 0.85em;
+            color: #666;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .use-cases-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .modal-content {
+                width: 95%;
+                height: 95%;
+            }
+
+            .category-nav {
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .use-cases-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .level-buttons {
+                flex-direction: column;
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+
+            .modal-body {
+                flex-direction: column;
+            }
+
+            .category-nav {
+                width: 100%;
+                max-height: 150px;
+                overflow-x: auto;
+                display: flex;
+                gap: 10px;
+                padding: 15px;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            .category-btn {
+                white-space: nowrap;
+                min-width: 120px;
+            }
+
+            .modal-search > div {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+
+            .modal-search > div > div {
+                justify-content: center !important;
+            }
+
+            #downloadSelectedBtn, #downloadAllBtn {
+                padding: 8px 15px !important;
+                font-size: 0.9em !important;
+            }
+
+            .modal-search > div > div {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 AI 활용 레벨 진단 게임</h1>
+            <p>일상 업무에서 AI를 활용할 수 있는 50가지 사례 중<br>본인의 업무와 관련된 항목을 최대 5개까지 선택하고 현재 레벨을 진단해보세요!</p>
+        </div>
+        
+        <div class="content">
+            <!-- Step 1: Use Case Selection -->
+            <div id="step1">
+                <div class="instruction">
+                    <h2>📋 1단계: 업무 선택</h2>
+                    <p>
+                        아래 50개의 AI 활용 사례 중 본인의 업무와 관련이 있는 항목을 <strong>최대 5개</strong>까지 선택하세요
+                    </p>
+                </div>
+                
+                <div class="counter" id="counter">선택된 항목: 0 / 5</div>
+                
+                <div class="use-cases-grid" id="useCasesGrid"></div>
+                
+                <div class="submit-section">
+                    <button class="submit-btn" id="step1Btn" disabled>다음 단계로</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Level Selection -->
+            <div id="step2" class="level-selection-section">
+                <div class="instruction">
+                    <h2>⭐ 2단계: 나의 활용 레벨 선택</h2>
+                    <p>선택한 각 항목에 대해 현재 본인의 활용 수준을 솔직하게 선택해주세요</p>
+                </div>
+                
+                <div id="levelSelectionContainer"></div>
+                
+                <div class="submit-section">
+                    <button class="submit-btn" id="step2Btn" disabled>🎯 내 AI 레벨 확인하기!</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Results -->
+            <div id="step3" class="results-section">
+                <div class="overall-result" id="overallResult"></div>
+                
+                <div class="instruction">
+                    <h2>💡 각 항목별 활용 예시</h2>
+                    <p>선택하신 항목에 대해 기초부터 고급까지 활용 예시를 확인해보세요. 다음 레벨로 가는 힌트가 될 거예요!</p>
+                </div>
+                
+                <div id="detailResults"></div>
+                
+                <div class="export-section">
+                    <button class="export-btn" onclick="exportResults()">📥 결과 저장하기</button>
+                    <button class="export-btn" onclick="showPromptGuide()">📚 전체 프롬프트 사전 보기</button>
+                    <button class="export-btn reset-btn" onclick="resetForm()">🔄 처음부터 다시하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 프롬프트 사전 모달 -->
+    <div id="promptGuideModal" class="prompt-modal" style="display: none;">
+        <div class="modal-overlay" onclick="closePromptGuide()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 AI 프롬프트 사전</h2>
+                <button class="close-btn" onclick="closePromptGuide()">×</button>
+            </div>
+
+            <div class="modal-search">
+                <input type="text" id="promptSearch" placeholder="🔍 프롬프트 검색..." onkeyup="filterPrompts()">
+                <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="bookmark-filter-btn" id="showAllBtn" onclick="showAllPrompts()" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">전체</button>
+                        <button class="bookmark-filter-btn" id="showBookmarksBtn" onclick="showBookmarkedOnly()" style="background: #ffd700; color: #333; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">⭐ 즐겨찾기만</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <span id="selectedCount" style="font-size: 0.9em; color: #667eea; font-weight: 600;">선택된 프롬프트: 0개</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="downloadAllBtn" onclick="downloadAllPrompts()" style="background: #6f42c1; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: 600;">📚 전체 프롬프트 저장</button>
+                            <button id="downloadSelectedBtn" onclick="downloadSelectedPrompts()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: 600; opacity: 0.5;" disabled>📥 선택한 프롬프트 다운로드</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="category-nav">
+                    <div id="categoryButtons"></div>
+                </div>
+
+                <div class="prompt-content">
+                    <div id="promptList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const useCases = [
+            "이메일 작성",
+            "회의록 작성 및 정리",
+            "업무 보고서 작성",
+            "프로토타입 만들기",
+            "뉴스 검색 및 요약",
+            "장문 문서 요약 및 핵심 추출",
+            "코칭 및 상담",
+            "일정 요약 및 관리",
+            "업무 흐름 개선",
+            "평가/채점 기준 설계",
+            "비교 분석",
+            "페르소나 생성",
+            "문서 템플릿 생성",
+            "커뮤니케이션 전략수립",
+            "데이터 시각화 가이드",
+            "데이터 분석 보고서 작성",
+            "브리핑 자료 작성",
+            "PRD(Product Requirement Document) 작성",
+            "보고서 분석",
+            "공고 작성",
+            "데이터 이상값 찾기",
+            "성과 리뷰 작성",
+            "피드백 감성 분석",
+            "업무 자동화 프로세스 개발",
+            "대화/발표 스크립트 작성",
+            "업무 매뉴얼 및 가이드 작성",
+            "계획서 작성",
+            "FAQ 생성",
+            "커뮤니케이션 가이드라인 개발",
+            "설문 질문 생성",
+            "제안서 작성",
+            "공지/안내 자료 작성",
+            "반복성 작업 자동화",
+            "교육 자료 개발",
+            "콘텐츠 기획",
+            "아티클 및 콘텐츠 글쓰기",
+            "엑셀 등 BI 툴 활용방안 질문",
+            "홍보 문구 작성",
+            "업무 계획 수립",
+            "리서치 계획수립",
+            "PR 자료 작성",
+            "KPI 대시보드 설계",
+            "예산 계획 수립",
+            "계약서 검토",
+            "정책 문서 작성",
+            "다국어 번역 및 현지화",
+            "기술 문서 작성",
+            "AI 활용방안 탐구",
+            "팀 활동 아이디어",
+            "프레젠테이션 구성"
+        ];
+        
+        const examples = {
+            "이메일 작성": {
+                basic: {
+                    text: `"다음 주 월요일 오전 10시에 전사 회의가 있습니다. 전 직원에게 참석을 요청하는 이메일을 작성해주세요."`,
+                    desc: "간단한 요청, 기본 정보만 제공"
+                },
+                intermediate: {
+                    text: `"다음 주 월요일(3월 20일) 오전 10시 본사 대회의실에서 Q1 성과 공유 및 Q2 전략 논의를 위한 전사 회의를 진행합니다. 전 직원 대상으로 참석 요청 이메일을 작성해주세요. 톤은 공식적이지만 친근하게 작성하고, 필수 참석임을 강조하되 부득이한 경우 팀장에게 사전 보고하도록 안내해주세요. 회의 안건은 별도 첨부할 예정이니 안건 확인 후 의견이 있으면 미리 공유하라는 내용도 포함해주세요."`,
+                    desc: "구체적 조건과 톤 지정, 세부 요구사항 포함"
+                },
+                advanced: {
+                    text: "🔄 [페르소나] \n   P&C팀/내부 커뮤니케이션 담당 매니저 \n   단순 일정 공지가 아닌, '전 직원의 전략적 공감대' 구축 전문가 \n\n🔄 [문제] \n   '전사 회의' 공지 이메일이 '또 하나의 의무적이고 지루한 회의'로 인식되기 쉬움 \n   직원들이 마지못해 참여하거나, 안건을 미리 읽어보지 않아 회의 질이 현저히 떨어짐 \n\n🔄 [맥락] \n   이번 회의는 단순한 실적 보고가 아닌, 'Q1 성과를 기반으로 Q2의 방향성을 함께 논의'하는 중요한 자리 \n   직원들이 회의의 '중요성'을 인지하고 '사전 준비' 후 참여하도록 유도해야 함 \n\n🔄 [산출물] \n   수동적인 '참석'이 아닌, 능동적인 '사전 준비와 참여'를 유도하는 \n   '전사 회의 참석 요청 이메일' 초안 1건 \n\n🔄 [작업절차] \n   (1) [매력적인 제목]: \n       '필수 참석'과 '회의의 중요성(Q1 리뷰 및 Q2 전략)'이 한눈에 드러나는 명확한 제목 작성 \n   (2) [도입부 (The Why)]: \n       회의의 목적(Q1 성과 공유 및 Q2 전략 논의)을 '공식적이지만 친근한' 톤으로 설명 \n       '전 직원이 한 방향을 보는 데' 왜 중요한지 그 가치를 먼저 제시 \n   (3) [핵심 정보 (The What/When/Where)]: \n       회의 일시(3월 20일(월) 오전 10시)와 장소(본사 대회의실)를 명확하게 기재 \n   (4) [참석 요청 (The Action)]: \n       '전 직원 필수 참석'임을 정중하지만 단호하게 명시 \n       부득이한 사유 시 팀장께 '사전 보고' 가이드 포함 \n   (5) [사전 준비 요청 (Pre-work)]: \n       '회의 안건 별도 첨부' 안내 \n       안건 미리 검토 후 'Q2 전략' 의견 적극 공유 요청 (능동적 참여 유도) \n\n🔄 [산출물 형식] \n   이메일 '제목'과 '본문(인사말, 본론, 맺음말)'이 완벽하게 구분된, \n   사내 이메일로 즉시 발송 가능한 텍스트 형식",
+                    desc: "참여 유도형 커뮤니케이션, 목적 중심 프레이밍, 행동 유도(Call to Action) 명시"
+                }
+            },
+            "회의록 작성 및 정리": {
+                basic: {
+                    text: `"오늘 마케팅팀 회의 내용을 정리해서 회의록을 작성해주세요. 논의한 내용은 신제품 런칭 일정, 광고 예산 배분, 다음 주 할 일들입니다."`,
+                    desc: "단순 정리 요청, 기본 내용만 제공"
+                },
+                intermediate: {
+                    text: `"Q1 전략 회의록을 작성해주세요. 참석자는 팀장과 팀원 5명이었고, 주요 논의사항은 분기별 목표 달성 현황, 신규 프로젝트 우선순위 결정, 리소스 재배치 방안이었습니다. 회의록 형식은 회사 표준 양식에 맞춰 논의사항/결정사항/액션아이템으로 구분하고, 각 액션아이템에는 담당자와 완료 예정일을 명시해주세요. 다음 회의는 2주 후 예정이니 그때까지의 follow-up 사항도 별도로 정리해주세요."`,
+                    desc: "구조화, 형식 지정, 후속 처리 포함"
+                },
+                advanced: {
+                    text: "🔃 [페르소나] \n   15년 경력의 'PMO(Project Management Officer)' 전문가 \n   2시간짜리 전략 회의의 복잡다단한 논의를 '실행'에 옮길 수 있고 '책임 소재'가 명확한 \n   '단 하나의 진실(Single Source of Truth)' 문서로 변환하는 전문가 \n\n🔃 [문제] \n   [Q1 전략 회의]를 막 마쳤음. 참석자는 [팀장과 팀원 5명] \n   [분기별 목표 달성 현황, 신규 프로젝트 우선순위, 리소스 재배치]라는 무거운 주제들을 논의 \n   '흩어진 메모'나 '기억'에만 의존하면 2주 뒤 \"누가 뭘 하기로 했죠?\"라는 최악의 상황 반복 \n\n🔃 [맥락] \n   이 회의록은 단순한 '기록'이 아니라, 우리 팀이 '2주 후' 예정된 다음 회의까지 달려갈 \n   '액션 플랜의 청사진'임 \n   '논의된 것'과 '결정된 것'을 명확히 구분하고, '누가, 무엇을, 언제까지' 해야 하는지를 \n   모든 팀원이 즉각적으로 파악할 수 있게 하는 것이 목표 \n\n🔃 [산출물] \n   Q1 전략 회의의 '논의 결과'와 '다음 단계'가 완벽하게 정리된, \n   '실행 중심의 공식 회의록(Action-driven Minutes)' 1부 \n\n🔃 [작업절차] \n   (1) [회의 개요 작성]: \n       참석자(팀장, 팀원 5명), 회의 목적(Q1 성과 공유 및 Q2 전략 논의)을 명확히 기재 \n   (2) [논의/결정사항 분리]: \n       3가지 주요 논의사항(목표 달성 현황, 신규 프로젝트, 리소스 재배치) 각각에 대해 \n       '논의사항(Discussion)'과 '결정사항(Decision)'을 명확하게 분리하여 요약 \n   (3) [액션 아이템 추출]: \n       모든 논의/결정 사항에서 도출된 '모든' 액션아이템을 추출 \n   (4) [책임 할당]: \n       각 액션아이템에 대해 '담당자'와 '완료 예정일'을 [담당자 OOO], [완료일: YY-MM-DD]와 \n       같이 명시적인 '테이블'로 작성 \n   (5) [Follow-up 항목 정리]: \n       '2주 후' 다음 회의 전까지 반드시 확인(Follow-up)되어야 할 핵심 진행 사항들을 \n       '별도 섹션'으로 분리하여 강조 \n\n🔃 [산출물 형식] \n   '회사 표준 양식'에 따라, 아래 섹션 구분이 명확한 '마크다운(Markdown)' 텍스트 형식 \n   1. 회의 개요 (일시, 장소, 참석자, 주요 안건) \n   2. 주요 논의 및 결정 사항 (안건별 '논의사항' / '결정사항' 구분) \n   3. 액션 아이템 (테이블 형식: No., Action Item, 담당자, 완료 예정일) \n   4. 2주 후 Follow-up 사항 \n\n--- \n🔃 [입력 정보] \n   [회의 원본 데이터/메모/녹취록 요약을 입력] \n   (예: \"목표 달성 현황: A팀 105% 달성, B팀 90% 미달. 원인 논의함... / \n   신규 프로젝트: X, Y, Z 중 X를 우선순위 High로 결정... / \n   리소스: B팀 인원 1명 A팀으로 이동 결정...\" 등)",
+                    desc: "액션 중심 기록, 책임 소재 명확화, 회의 결과물 표준화"
+                }
+            },
+            "업무 보고서 작성": {
+                basic: {
+                    text: `"이번 주 업무 보고서를 작성해주세요. 완료한 일은 고객 DB 정리, 제안서 2건 작성, 경쟁사 분석이고, 다음 주 할 일은 신규 프로젝트 기획회의 참석입니다."`,
+                    desc: "기본 항목 나열, 단순 구조"
+                },
+                intermediate: {
+                    text: `"월간 성과 보고서를 작성해주세요. 이번 달 주요 성과는 신규 고객 12개 확보(목표 10개 초과달성), A프로젝트 1단계 완료(계획보다 3일 빠름), B프로젝트 80% 진행률입니다. 진행 중인 이슈로는 C프로젝트 예산 15% 초과와 인력 부족으로 인한 일정 지연이 있습니다. 다음 달 계획에는 프로세스 개선을 통한 효율성 향상 방안 3가지를 포함해주세요. 보고서 형식은 성과를 강조하되 간결하게 불릿포인트로 작성하고, 상사가 한눈에 파악할 수 있도록 구성해주세요."`,
+                    desc: "구조화, 성과 중심, 이슈 포함"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   나의 '팀장'이자 '커리어 코치' \n   [주간 업무 초안]을 '단순 업무 나열(To-do list)'이 아니라 '팀의 목표에 기여하는 가치(Value)'로 \n   보이도록 전략적으로 '재구성(Reframe)'하는 전문가 \n\n📊 [문제] \n   [주간 업무 초안]을 가지고 주간회의 보고를 해야 함 \n   'DB 정리', '제안서 작성' 같은 항목들은 '무엇을 했는지'는 보여주지만, \n   '그래서 그게 왜 중요한지', '어떤 가치를 만들었는지'는 전혀 보여주지 못함 \n   이대로 보고하면 그저 '수동적으로 바쁜 사람'처럼 보일 것 \n\n📊 [맥락] \n   이 보고는 '주간 팀 회의'에서 팀장님과 동료들에게 공유됨 \n   목적은 '나의 시간을 어떻게 썼는지'를 해명하는 것이 아니라, \n   '내가 팀의 목표 달성에 어떻게 기여하고 있는지'를 명확히 보여주고 \n   '다음 스텝'에 대한 공감대를 얻는 것 \n\n📊 [산출물] \n   수동적인 '업무 나열'을, 팀의 목표와 연결된 '능동적인 성과'로 재구성한 \n   '가치 중심(Value-driven) 주간 보고서' 1부 \n\n📊 [작업절차] \n   (1) [업무의 '가치' 재정의]: \n       '완료한 일' 3가지를 각각 '그래서 어떤 가치가(So What?)' 생겼는지 \n       그 '목적'과 '결과'를 중심으로 재구성 \n       예시: \n       • '고객 DB 정리' → '2분기 마케팅 캠페인 정확도 향상을 위한 DB 정제 완료' \n       • '제안서 2건 작성' → '신규 매출 파이프라인 2건 확보를 위한 제안서 전달 완료' \n       • '경쟁사 분석' → '경쟁사 OOO 신규 기능 출시 팩트 발견 및 위협 요인 분석' \n   (2) [다음 주 업무의 '전략' 제시]: \n       '다음 주 할 일'을 단순 '참석'이 아닌, '기여할 점'이나 '준비할 점'을 포함하는 \n       '능동적인 계획'으로 변경 \n       예시: '신규 프로젝트 X 기획회의 참여 - 경쟁사 분석 기반 초기 아이디어 제안 준비' \n\n📊 [산출물 형식] \n   팀 주간회의 슬라이드나 슬랙(Slack)에 바로 붙여넣을 수 있는, \n   '이번 주 핵심 성과'와 '다음 주 핵심 계획'이 명확히 구분된 간결한 불릿포인트 텍스트 \n\n--- \n📊 [입력 정보] \n   * 완료한 일: 고객 DB 정리, 제안서 2건 작성, 경쟁사 분석 \n   * 다음 주 할 일: 신규 프로젝트 기획회의 참석",
+                    desc: "가치 중심 재구성, 수동적 업무를 능동적 성과로, 목적 중심 보고"
+                }
+            },
+            "프로토타입 만들기": {
+                basic: {
+                    text: `"고객사 홈페이지 리뉴얼을 위한 간단한 프로토타입을 만들어주세요. 메인 네비게이션, 로고, 기본 콘텐츠 영역이 포함된 레이아웃으로 작성해주세요."`,
+                    desc: "기본 구성 요청, 단순 레이아웃"
+                },
+                intermediate: {
+                    text: `"B2B SaaS 대시보드 UI 프로토타입을 작성해주세요. 타겟 사용자는 마케팅 매니저이고, 주요 기능은 캐페인 성과 모니터링, 리드 추적, ROI 분석입니다. 스타일은 깨끗하고 전문적인 느낌으로, 데이터 시각화에 중점을 둔 디자인으로 작성해주세요. HTML/CSS로 구현 가능한 수준으로 만들고, 주요 UI 컴포넌트도 명시해주세요."`,
+                    desc: "구체적 요구사항, 기술 지정, 타겟 명확"
+                },
+                advanced: {
+                    text: "🎨 [페르소나] \n   10년 차 B2B SaaS 전문 UI/UX 디자이너이자 프론트엔드 개발 리드 \n   '아름다운 디자인'을 넘어, '복잡한 비즈니스 데이터를 직관적인 인사이트'로 전환하여 \n   사용자의 '업무 효율'을 극대화하는 대시보드 설계 전문가 \n\n🎨 [문제] \n   [마케팅 매니저]를 위한 B2B SaaS 대시보드 UI를 개발해야 함 \n   '캠페인 성과, 리드 추적, ROI 분석' 기능은 중요하지만, \n   단순히 데이터를 나열하는 대시보드는 '핵심 인사이트'를 얻는 데 전혀 도움이 되지 않음 \n   복잡하고 산만한 UI는 결국 사용자의 외면을 받을 것 \n\n🎨 [맥락] \n   이 대시보드는 마케팅 매니저가 매일 아침 접속하여 '오늘의 핵심 KPI'를 확인하고, \n   '어떤 캠페인에 더 리소스를 투입할지'를 즉각적으로 의사결정하는 '미션 크리티컬'한 도구 \n   '깨끗하고 전문적인 느낌'은 기본이며, '데이터 시각화'를 통해 \n   복잡한 데이터를 '스토리'로 만들어주는 것이 핵심 \n\n🎨 [산출물] \n   [마케팅 매니저]가 '데이터를 읽고 바로 액션'할 수 있도록 돕는, \n   '데이터 시각화 중심의 B2B SaaS 대시보드 UI 프로토타입 설계(HTML/CSS 구현 레벨)' 1건 \n\n🎨 [작업절차] \n   (1) [핵심 정보 계층화 (Information Hierarchy)]: \n       마케팅 매니저의 '의사결정 우선순위'를 고려하여, 대시보드의 메인 화면에 \n       가장 중요하게 보여줄 정보를 3-4가지 핵심 섹션으로 나누어 배치 \n       • Top-level metrics: Overall Performance, Key Lead Funnel Status, ROI Summary \n   (2) [캠페인 성과 모니터링 섹션 설계]: \n       (a) '전체 캠페인' 대비 'Top 3 캠페인'의 성과를 한눈에 비교할 수 있는 \n           시각화(예: '막대 차트' 또는 '도넛 차트') 포함 \n       (b) 각 캠페인의 상태(Active, Paused, Ended)와 성과 추이(트렌드 라인)를 보여주는 \n           '간결한 테이블 또는 카드' 형태로 구성 \n   (3) [리드 추적 및 ROI 분석 섹션 설계]: \n       (a) '리드 퍼널(Lead Funnel)'의 각 단계별 전환율을 시각화(예: '깔때기 차트')하고, \n           문제가 되는 구간을 시시각각 파악할 수 있도록 설계 \n       (b) 'ROI 분석'은 단순히 숫자를 보여주는 것이 아니라, \n           '어떤 캠페인이 가장 효율적인지'를 직관적으로 비교할 수 있는 형태로 구성 \n           (예: '버블 차트' 또는 '테이블 내 색상 강조') \n   (4) [디자인 원칙 및 컴포넌트]: \n       '깨끗하고 전문적인' 스타일을 유지하기 위한 '색상 팔레트(Color Palette)'와 \n       '폰트(Font)' 가이드 제시 \n       주요 UI 컴포넌트 명시: KPI 카드, 라인 차트, 바 차트, 깔때기 차트, \n       데이터 테이블, 필터 드롭다운 \n\n🎨 [산출물 형식] \n   HTML/CSS로 개발팀이 즉시 구현 가능한 수준의, \n   마크다운(Markdown) 텍스트 기반의 상세 UI 프로토타입 설계 \n   각 섹션별로 UI 컴포넌트와 데이터 배치, 시각화 형태에 대한 상세 설명 포함 \n   (필요 시 특정 시각화 요소에 대한 간단한 텍스트 아트 또는 코드 예시 포함)",
+                    desc: "사용자 의사결정 지원, 데이터 스토리텔링 UI, HTML/CSS 구현 레벨 제시"
+                }
+            },
+            "뉴스 검색 및 요약": {
+                basic: {
+                    text: `"인공지능 관련 최신 뉴스를 검색해서 요약해주세요. 주요 IT 기업들의 AI 동향과 기술 발전 소식을 중심으로 알려주세요."`,
+                    desc: "일반적인 검색 요청, 기본 주제"
+                },
+                intermediate: {
+                    text: `"최근 1주일간 AI 산업 주요 뉴스를 검색해주세요. 검색 범위는 구글, 오픈AI, 마이크로소프트 등 주요 테크 기업들의 AI 관련 발표와 동향입니다. 각 뉴스를 3줄 요약으로 정리하고, 우리 업계(마케팅 테크)에 미칠 수 있는 영향을 간단히 분석해주세요."`,
+                    desc: "기간과 범위 지정, 요약 형식, 업계 영향 분석"
+                },
+                advanced: {
+                    text: "🔍 [페르소나] \n   15년 차 시장 인텔리전스 전문가 \n   CEO를 위한 '뉴스 홍수에서 핵심 시그널 선별' 전문가 \n\n🔍 [문제] \n   AI 업계 뉴스 과부하 상황 \n   표면적 사실만 다루는 기사 때문에 진짜 비즈니스 임플리케이션 파악 어려움 \n   중요한 신호 놓치면 전략 방향 실패 \n\n🔍 [맥락] \n   CEO의 매일 아침 브리핑 목적 \n   팩트 기반 논리적 추론으로 즉시 실행할 수 있는 구체적 액션 도출 필요 \n\n🔍 [산출물] \n   '100개 뉴스 → 핵심 5개' 선별하여 비즈니스 영향 예측하는 \n   '전략적 뉴스 인텔리전스 보고서' 1부 \n\n🔍 [작업절차] \n   (1) [핵심 뉴스 5개 선별]: \n       100개 뉴스 중 우리 사업에 직간접적 영향을 줄 핵심 5개 식별 \n   (2) [시그널 분석]: \n       각 뉴스의 '겉 내용' vs '숨겨진 의미' 분석하여 진짜 임플리케이션 도출 \n   (3) [선제적 대응 방안]: \n       6개월 후 우리가 취해야 할 구체적 대응 방안 3가지 제시 \n   (4) [조기 경보 시스템]: \n       향후 유사한 변화를 감지할 수 있는 모니터링 체크리스트 구축 \n\n🔍 [산출물 형식] \n   5분 브리핑용 핵심 요약 + 상세 분석 리포트 + 모니터링 체크리스트",
+                    desc: "시장 인텔리전스 전문가, 시그널 탐지, 전략적 대응"
+                }
+            },
+            "장문 문서 요약 및 핵심 추출": {
+                basic: {
+                    text: `"첨부된 50페이지 업계 보고서를 요약해주세요. 핵심 내용을 3-5페이지 분량으로 정리해주세요."`,
+                    desc: "전체 요약 요청, 기본 분량 지정"
+                },
+                intermediate: {
+                    text: `"첨부된 산업 리포트를 3페이지로 요약해주세요. 포함해야 할 내용: 핵심 시장 트렌드, 주요 수치 데이터, 우리 회사 사업과 직접 관련된 부분. 제외할 내용: 연구 방법론, 배경 설명, 기술적 상세 내용. 최종 결과물은 임원 브리핑용으로 작성해주세요."`,
+                    desc: "목적 명확, 선택적 요약, 대상 지정"
+                },
+                advanced: {
+                    text: "📄 [페르소나] \n   기획팀 대리 \n   팀장 휴가로 '급하게' 임원 보고서를 준비해야 하는 문서 정리 전문가 \n\n📄 [문제] \n   오늘 50페이지 시장조사 보고서 도착 \n   내일 아침 9시 임원회의에서 5분 브리핑 필요 \n   보고서가 길고 전문용어 많아서 정리 방법 막막 \n\n📄 [맥락] \n   임원들은 '결론부터 말해' 스타일 선호 \n   중요 내용 누락은 큰 문제, 너무 많은 내용은 집중도 하락 \n   5분 브리핑 안에 모든 것을 담아야 함 \n\n📄 [산출물] \n   임원들의 '핵심만 콕 집어서 잘 정리했네' 평가를 받을 수 있는 \n   '전략적 문서 요약본' 1세트 \n\n📄 [작업절차] \n   (1) [핵심 내용 3가지 선별]: \n       보고서에서 '우리 회사에 직접 영향을 주는 내용' 3가지만 선별 \n   (2) [데이터 단순화]: \n       복잡한 데이터를 '한 줄로 말하면' 형식으로 단순화 \n   (3) [액션 아이템 도출]: \n       '그래서 우리가 해야 할 일'을 구체적 액션 3개로 정리 \n   (4) [예상 Q&A 대비]: \n       임원들의 예상 질문 5개를 미리 준비하여 추가 설명 가능하도록 대비 \n\n📄 [제약사항] \n   전문용어는 쉬운 말로 변환 \n   개인 해석보다 보고서 팩트 기반 \n   5분 브리핑 분량 준수 \n\n📄 [산출물 형식] \n   임원 브리핑용 1페이지 요약 + 상세 근거자료 3페이지 + 예상 Q&A 준비자료",
+                    desc: "기획팀 대리, 임원 브리핑, 급박한 일정 대응"
+                }
+            },
+            "코칭 및 상담": {
+                basic: {
+                    text: `"직장에서 커리어 발전에 대한 고민이 있습니다. 전반적인 커리어 계획 수립에 대한 조언을 해주세요."`,
+                    desc: "일반적 조언, 기본 상담"
+                },
+                intermediate: {
+                    text: `"현재 마케팅 팀에서 5년차로 일하고 있는데, 리더 역할에 대한 고민이 있습니다. 제 강점은 데이터 분석과 전략 기획 능력이고, 약점은 팀 관리 경험 부족입니다. 1년 내 팀장으로 승진하는 것이 목표인데, 어떻게 준비해야 할지 구체적인 액션 플랜을 제시해주세요."`,
+                    desc: "맥락 제공, 구체적 조언, 목표 지향"
+                },
+                advanced: {
+                    text: "💼 [페르소나] \n   일반 사무직 5년차 \n   동기들 승진하는데 나만 제자리인 것 같아 불안한 직장인 \n\n💼 [문제] \n   '열심히 한다'는 평가는 받지만 승진이나 중요 프로젝트에서 항상 다른 사람 선택됨 \n   상사도 명확한 피드백을 주지 않아 개선 포인트 모름 \n   경력 정체 우려 \n\n💼 [맥락] \n   동기들의 '네트워킹 부족', '존재감 약함' 조언은 있지만 구체적 방법 모름 \n   이직 고민도 있지만 확신 부족 \n\n💼 [산출물] \n   '승진되는 사람 vs 안 되는 사람'의 차이 분석하여 \n   6개월 내 확실한 변화를 만드는 '실행 가능한 자기계발 계획' 1세트 \n\n💼 [작업절차] \n   (1) [차이점 분석]: \n       현재 내 업무 스타일과 승진하는 동료들의 차이점 5가지 분석 \n   (2) [상사 역량 파악 방법]: \n       상사가 중요하게 생각하는 역량을 파악하는 방법 3가지 제시 \n   (3) [일상 변화 포인트]: \n       일상 업무에서 조금씩 실천할 수 있는 변화 포인트 7개 도출 \n   (4) [3개월 목표 설정]: \n       '확실히 달라졌다'는 평가를 받을 수 있는 구체적 목표 설정 \n\n💼 [제약사항] \n   성격 완전 변화 요구 금지 \n   현실적으로 실천 가능한 범위에서 점진적 개선 방안 제시 \n\n💼 [산출물 형식] \n   자기진단 체크리스트 + 3개월 실행 계획표 + 상사 피드백 면담 가이드",
+                    desc: "5년차 사무직, 승진 고민, 현실적 자기계발"
+                }
+            },
+            "일정 요약 및 관리": {
+                basic: {
+                    text: `"이번 주 일정을 정리해주세요. 주요 회의와 마감일, 중요한 업무들을 시간순으로 정리해주세요."`,
+                    desc: "단순 정리, 시간순 배열"
+                },
+                intermediate: {
+                    text: `"첨부된 이번 주 캘린더를 분석해서 일정을 요약해주세요. 다음 내용을 포함해주세요: 중요 회의 3개 하이라이트와 각각의 준비 사항, 시간 여유가 있는 날과 과부하가 예상되는 날 표시, 긴급하지 않지만 중요한 업무들의 최적 스케줄링 제안."`,
+                    desc: "우선순위, 준비사항 파악, 스케줄링 최적화"
+                },
+                advanced: {
+                    text: "📅 [페르소나] \n   최고 참모(Chief of Staff)이자 생산성 전략가 \n   '수동적 일정 대응'을 '능동적 성과 창출'로 바꾸는 전문가 \n\n📅 [문제] \n   캘린더에 약속만 빽빽하게 있어 진짜 중요한 것 파악 어려움 \n   '언제 숨 쉴 틈이 있고, 언제 터지기 직전인지' 한눈에 알 수 없음 \n   중요 회의 무준비 상태 진입, 긴급하지 않지만 중요한 업무 계속 미루게 됨 \n\n📅 [맥락] \n   월요일 아침 전략 회의 자료 \n   캘린더 요약이 아닌 '어디에 에너지 집중, 언제 방해받지 않는 시간 사수'에 대한 명확한 실행 계획 필요 \n   시간을 가장 가치 있게 쓸 수 있도록 도와줘야 함 \n\n📅 [산출물] \n   이번 주 '생산성 극대화'하고 '번아웃 방지'하는 \n   '주간 전략 브리핑 및 스케줄링 제안서' 1부 \n\n📅 [작업절차] \n   (1) [Top 3 하이라이트]: \n       참석자/안건의 중요도 기준으로 'Top 3 중요 회의' 식별 \n       각 회의별 목표와 반드시 준비해야 할 사항(Prep-work) 명확히 제시 \n   (2) [주간 워크로드 예보]: \n       각 요일을 '과부하 예상(회의 60% 이상)', '균형', '집중 가능(빈 시간 4시간 이상)'으로 진단 \n       언제 달리고 언제 쉬어야 할지 시각적으로 표시 \n   (3) [최적 스케줄링 제안]: \n       '집중 가능' 시간 블록 식별하여 \n       '긴급하지 않지만 중요한 업무'를 전략적으로 배치하는 최적화된 스케줄 제안 \n\n📅 [산출물 형식] \n   노션/슬랙에 복사 가능한 마크다운 텍스트 \n   (1. Top 3 Priorities / 2. Workload Forecast / 3. Proposed Schedule)",
+                    desc: "시간의 전략적 재배치, 핵심 우선순위 식별, '바쁨'을 '생산성'으로 변환"
+                }
+            },
+            "업무 흐름 개선": {
+                basic: {
+                    text: `"우리 팀의 업무 프로세스를 개선할 수 있는 방안을 제안해주세요. 현재 비효율적인 업무 방식과 개선 가능한 영역들을 알려주세요."`,
+                    desc: "일반적 제안, 기본 개선 아이디어"
+                },
+                intermediate: {
+                    text: `"견적 승인 프로세스 개선 방안을 제안해주세요. 현재 상황: 5단계 승인 절차로 평균 3일이 소요되고 있습니다. 목표는 1일 내 완료이고, 주요 병목 지점은 2차 승인 단계에서의 지연입니다. 제약 조건으로는 기존 시스템을 계속 사용해야 하고 인력 추가는 불가합니다. 이런 상황에서 가능한 개선 방안을 제시해주세요."`,
+                    desc: "현황 분석, 목표 명확, 제약 조건 고려"
+                },
+                advanced: {
+                    text: "🔧 [페르소나] \n   린 식스 시그마 마스터 블랙벨트(LSS MBB) \n   기존 시스템·제한된 자원 하에서 '병목·낭비 제거' 전문 컨설턴트 \n\n🔧 [문제] \n   견적 승인 프로세스 5단계로 평균 3일 소요 \n   고객 응대 속도 저하, 비즈니스 기회 상실 \n   2차 승인 단계에서의 상습적 지연이 명백한 병목 지점 \n\n🔧 [맥락] \n   목표: 평균 3일 → 1일 내 완료 \n   제약조건: (1) 기존 시스템 계속 사용 (2) 인력 추가 불가 \n   오직 '프로세스'와 '규칙' 변경만으로 목표 달성해야 함 \n\n🔧 [산출물] \n   '인력'이나 '시스템' 변경 없이 프로세스·규칙 변경만으로 \n   1일 내 완료 목표를 달성하는 '즉시 실행 가능한 프로세스 개선 액션 플랜' 1부 \n\n🔧 [작업절차] \n   (1) [근본 원인 진단]: \n       2차 승인 지연의 가능성 높은 원인 3가지를 논리적으로 추정 \n   (2) [낭비(Muda) 제거]: \n       5단계 중 '통합/자동화/삭제' 가능한 '가치 없는' 단계 식별 및 근거 제시 \n   (3) [흐름(Flow) 개선]: \n       (a) 2차 승인 지연을 '우회'하거나 '촉발'할 수 있는 새로운 규칙 제안 \n       (b) 순차적 → 병렬적(Parallel) 동시 처리 가능 방안 검토 \n   (4) [제약조건 준수]: \n       모든 방안이 기존 시스템·추가 인력 없음 조건 위반하지 않는지 확인 \n\n🔧 [산출물 형식] \n   1. 근본 원인 분석 \n   2. As-Is → To-Be 개선안 (테이블) \n   3. 즉시 실행 가능한 Action Item 3가지 (우선순위 포함)",
+                    desc: "As-Is와 To-Be 명시, 명확한 제약조건 설정, 병목 지점(Bottleneck) 타겟팅"
+                }
+            },
+            "평가/채점 기준 설계": {
+                basic: {
+                    text: `"신규 프로젝트 평가를 위한 기본적인 채점 기준을 만들어주세요. 품질, 일정 준수, 비용 효율성을 평가하는 기준이 필요합니다."`,
+                    desc: "일반적 기준, 기본 평가 요소"
+                },
+                intermediate: {
+                    text: `"팀원 연간 성과 평가 기준을 설계해주세요. 평가 항목은 업무 성과, 팀워크 및 협업, 개인 역량 성장 등 3가지로 구성하고, 각 항목별로 5점 척도로 평가해주세요. 정량적 지표(성과 수치)와 정성적 지표(동료 피드백)를 적절히 혼합하여 공정성을 확보할 수 있도록 구성해주세요."`,
+                    desc: "구조화, 균형, 공정성 고려"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   15년 차 HRBP 전문가 \n   '공정성' 기반으로 '팀원 성장 촉진'하고 '모두가 수긍하는' 평가 기준 설계 전문가 \n\n📊 [문제] \n   명확한 평가 기준 없이는 매니저의 주관적 감이나 최근의 기억에 의존하게 됨 \n   '숫자는 좋지만 팀워크 나쁜' 또는 '성과는 낮지만 성장 빠른' 사람 공정 평가 어려움 \n   팀 전체 동기 저하 우려 \n\n📊 [맥락] \n   평가 기준의 핵심 목표: '공정성 확보'와 '납득할 수 있는 결과' \n   3가지 핵심 항목(업무 성과/팀워크·협업/개인 역량 성장)의 상호보완적 작동 필요 \n   정량적·정성적 지표를 5점 척도로 변환하는 명확한 가이드 필요 \n\n📊 [산출물] \n   3가지 항목에 대해 정량과 정성 지표를 공정하게 혼합하는 \n   '연간 성과 평가 기준표 및 5점 척도 가이드라인' 1부 \n\n📊 [작업절차] \n   (1) [5점 척도 정의]: \n       1점(기대 대폭 미달) → 5점(기대 대폭 초과)가 각각 어떤 상태를 의미하는지 \n       구체적인 행동 지표(Behavioral Indicator) 명확하게 정의 \n   (2) [항목별 평가 기준 설계]: \n       (a) 업무 성과: 정량적·정성적 지표의 비중% 혼합 및 5점 척도 부여 기준 \n       (b) 팀워크 및 협업: 정성적 지표의 객관화 방안, 평가용 질문 예시와 평가 방식 포함 \n       (c) 개인 역량 성장: 미래 기여도 중심의 5점 척도 평가 기준 \n\n📊 [산출물 형식] \n   사내 평가 가이드라인에 바로 적용 가능한 테이블 형식 마크다운 텍스트",
+                    desc: "'공정성'과 '수용성' 확보, '정성'의 '객관화' 요구, '척도'의 행동 지표 정의"
+                }
+            },
+            "비교 분석": {
+                basic: {
+                    text: `"두 제품 A와 B를 비교 분석해주세요. 가격, 기능, 사용성을 중심으로 비교하고 장단점을 알려주세요."`,
+                    desc: "단순 비교, 기본 요소 중심"
+                },
+                intermediate: {
+                    text: `"마케팅 자동화 도구 A, B, C를 비교 분석해주세요. 비교 항목은 기능, 가격, 사용 편의성, 고객 지원, 통합 가능성입니다. 비교 결과를 표 형식으로 정리하고, 우리 회사의 예산과 요구사항에 따라 어떤 도구가 가장 적합한지 최종 추천안을 제시해주세요."`,
+                    desc: "구조화, 결론 도출, 맞춤 추천"
+                },
+                advanced: {
+                    text: "🔍 [페르소나] \\n   10년 차 비즈니스 컨설턴트 \\n   '스펙 나열'이 아닌 '전략적 의사결정'을 위한 도구 평가 전문가 \\n\\n🔍 [문제] \\n   마케팅 자동화 도구 A, B, C 도입 검토 중 \\n   웹사이트 설명만으로는 우리 회사 최적 선택 판단 어려움 \\n   '뻔한 비교표'는 의사결정의 함정만 유발 \\n\\n🔍 [맥락] \\n   목표는 '백과사전식 비교'가 아님 \\n   우리 회사 예산과 요구사항이라는 '필터' 기준 평가 필요 \\n   가장 비싸거나 가장 저렴한 선택의 함정 회피 \\n\\n🔍 [산출물] \\n   '그래서 우리는 어떤 도구를 선택해야 하는가'에 즉시 답할 수 있는 \\n   '실용적인 도구 도입 결정 가이드' 1부 \\n\\n🔍 [작업절차] \\n   (1) [평가 기준 설정]: \\n       우리 회사의 예산과 핵심 요구사항을 최우선 평가 기준으로 설정 \\n   (2) [5대 영역 분석]: \\n       (a) 핵심 요구사항 충족도 (b) 예산 범위 적합성 (c) 팀 학습 용이성 \\n       (d) 필요 지원 가능성 (e) 기존 툴 통합 호환성을 날카롭게 분석 \\n   (3) [비교 테이블 작성]: \\n       분석 내용을 한눈에 비교 가능한 표 형식으로 정리 \\n   (4) [최종 추천]: \\n       '우리 회사 기준' 장단점 명시하고 최종 추천 도구 1개 선정 및 명확한 근거 제시 \\n\\n🔍 [산출물 형식] \\n   도구별 비교 분석표 + 최종 추천 도구 및 선정 근거 요약",
+                    desc: "전략적 의사결정 지원, 우리 회사 맞춤 평가, 함정 회피"
+                }
+            },
+            "페르소나 생성": {
+                basic: {
+                    text: `"우리 새로운 피트니스 앱의 타겟 고객 페르소나를 만들어주세요. 20-30대 직장인을 주요 타겟으로 상정하고 있습니다."`,
+                    desc: "일반적 페르소나, 기본 타겟 설정"
+                },
+                intermediate: {
+                    text: `"30대 중반 직장인을 타겟으로 한 피트니스 앱 사용자 페르소나를 상세하게 만들어주세요. 포함 사항: 직업과 근무 환경, 라이프스타일과 일상 루틴, 건강과 운동에 대한 고민, 앱 사용 패턴과 선호 기능. 우리 앱이 이 사람의 일상에서 어떻게 도움이 될 수 있는지 시나리오를 작성하고, 공감할 만한 스토리도 포함해주세요."`,
+                    desc: "구체적 특성, 시나리오, 스토리 연계"
+                },
+                advanced: {
+                    text: "👤 [페르소나] \\n   10년 차 UX 리서처 \\n   '데이터 시트'가 아닌 '공감할 수 있는 이야기' 기반 페르소나 설계 전문가 \\n\\n👤 [문제] \\n   '30대 중반 직장인' 타겟은 정했지만 구체적 욕망과 좌절 불명확 \\n   건조한 정보 나열식 페르소나는 팀원 공감과 제품 개발 영감 제공 실패 \\n   '아무도 원하지 않는 기능' 개발 위험 \\n\\n👤 [맥락] \\n   목표는 팀원이 '오랜 친구를 돕는다'는 느낌을 받게 하는 것 \\n   24시간 생활 패턴 속 '좌절의 순간'과 '작은 희망' 포착 필요 \\n   진짜배기 고민을 날것 그대로 표현해야 함 \\n\\n👤 [산출물] \\n   생생하고 감동 있으며 즉각적인 액션을 유도하는 \\n   '액셔너블 페르소나(Actionable Persona)' 1부 \\n\\n👤 [작업절차] \\n   (1) [구체적 프로필]: \\n       이름, 직업, 근무 환경 구체적 설정 (예: 판교 IT 기획팀 김지훈 차장, 36세) \\n   (2) [24시간 건강 루틴]: \\n       기상-출근-업무-퇴근-저녁-취침을 건강 관점에서 재구성 \\n       '운동해야 하는데...' 다짐과 실패 패턴 분석 \\n   (3) [진짜 고민]: \\n       건강검진 결과, 늘어난 뱃살, 거북목, 만성피로 등을 날것 그대로 표현 \\n   (4) [앱 사용 패턴]: \\n       언제/왜/어떻게 사용할지, 선호/비선호 기능, 알림 민감도 등 구체적 패턴 제시 \\n   (5) [스토리와 시나리오]: \\n       '작년 PT 실패 이유' 공감 스토리 + '퇴근 후 15분 성공' 시나리오 작성 \\n\\n👤 [산출물 형식] \\n   팀원이 마치 실제 친구를 돕는 느낌을 받을 수 있는 \\n   구체적이고 생생한 페르소나 프로필 문서",
+                    desc: "공감 기반 페르소나, 실제 인물처럼 구체화, 액션 유도형"
+                }
+            },
+            "문서 템플릿 생성": {
+                basic: {
+                    text: `"팀원들이 사용할 주간 업무 보고서 템플릿을 만들어주세요. 이번 주 성과, 다음 주 계획, 이슈 사항으로 구성해주세요."`,
+                    desc: "기본 템플릿, 단순 구조"
+                },
+                intermediate: {
+                    text: `"마케팅팀의 주간 성과 보고서 템플릿을 만들어주세요. 주요 섹션: 주요 성과와 KPI 달성현황, 진행 중인 콘텐츠와 캐페인, 이슈 사항과 해결 방안, 다음 주 계획과 우선순위. 각 섹션별로 작성 가이드와 예시를 포함하고, 구글 드라이브나 노션에서 사용할 수 있는 형식으로 만들어주세요."`,
+                    desc: "구조화, 가이드 제공, 플랫폼 지원"
+                },
+                advanced: {
+                    text: "📋 [페르소나] \\n   10년 차 조직 개발(OD) 컨설턴트 \\n   '보고를 위한 보고'를 '전략 도출' 템플릿으로 바꾸는 전문가 \\n\\n📋 [문제] \\n   마케팅팀 주간 보고가 '업무 공유' 수준에 그침 \\n   팀원은 작성 시간 낭비, 팀장은 명확한 인사이트 부재 \\n   '형식적인 숙제'로 전락할 위험 \\n\\n📋 [맥락] \\n   목표는 '성과 개선'에 기여하는 보고서 \\n   템플릿 자체가 생각의 수준을 높이는 가이드 역할 \\n   신입도 '일 잘한다' 소리 들을 수 있는 수준 \\n\\n📋 [산출물] \\n   '생각의 틀' 자체를 잡아주는 \\n   '액셔너블 주간 보고서 템플릿' 1부 \\n\\n📋 [작업절차] \\n   (1) [4대 핵심 섹션]: \\n       KPI 달성현황, 진행 중 캠페인, 이슈 및 해결방안, 다음 주 계획 기본 구조 \\n   (2) [작성 가이드]: \\n       각 섹션별 '팀장이 가장 궁금해하는 것'에 답하는 형태로 가이드 제작 \\n   (3) [Good vs Bad 예시]: \\n       단순 사실 나열(Bad) vs 데이터 기반 해석과 제안(Good) 명확 대조 \\n   (4) [즉시 활용 형식]: \\n       구글 드라이브/노션에 복사-붙여넣기 가능한 마크다운 형식 \\n\\n📋 [산출물 형식] \\n   신입 마케터도 바로 사용 가능한 \\n   작성 가이드 + 예시 포함 템플릿",
+                    desc: "'형식적 숙제'를 '전략 도출 도구'로, Good/Bad 예시 제공"
+                }
+            },
+            "커뮤니케이션 전략수립": {
+                basic: {
+                    text: `"우리 회사의 새로운 마케팅 자동화 툴 출시를 위한 커뮤니케이션 전략을 수립해주세요. 타겟은 중소기업 마케팅 담당자이고, 3개월간 진행할 예정입니다."`,
+                    desc: "일반적 전략, 기본 요소"
+                },
+                intermediate: {
+                    text: `"신규 SaaS 제품 출시를 위한 통합 커뮤니케이션 플랜을 수립해주세요. 타겟 고객은 B2B 기업의 IT 담당자이고, 주요 채널은 이메일 마케팅, 웹사이트, 온라인 세미나입니다. 3개월 기간으로 단계별 메시지와 타이밍을 제시하고, 5천만원 예산 범위 내에서 효율적인 방안을 제안해주세요."`,
+                    desc: "타겟 명확, 단계적 접근, 예산 고려"
+                },
+                advanced: {
+                    text: "📢 [페르소나] \\n   15년 차 B2B 마케팅 전략 컨설턴트 \\n   '마케팅 소음'에 면역인 IT 담당자 대상 '신뢰 구축' 커뮤니케이션 전문가 \\n\\n📢 [문제] \\n   B2B IT 담당자 타겟 SaaS 제품 출시 (3개월/5천만원) \\n   기술적 신뢰 없이는 절대 움직이지 않는 집단 \\n   '기능 소개'만으론 진성 리드 확보 불가능 \\n\\n📢 [맥락] \\n   목표는 '제품 홍보'가 아닌 '신뢰 구축' \\n   Awareness(문제 이해) → Consideration(기술적 해결책) → Conversion(리스크 제거) \\n   예산은 확산이 아닌 '검증된 리드 확보'에 집중 \\n\\n📢 [산출물] \\n   '우리가 IT 담당자 문제를 정확히 아는 유일한 SaaS'라는 인식을 심어주는 \\n   '통합 커뮤니케이션 플랜' 1부 \\n\\n📢 [작업절차] \\n   (1) [3단계 타임라인]: \\n       1단계(문제 인식 및 공감대) → 2단계(기술적 솔루션 검증) → 3단계(도입 장벽 제거) \\n   (2) [채널별 연계 시나리오]: \\n       이메일/웹사이트/세미나가 유기적으로 다음 단계 유도하는 메시지 설계 \\n   (3) [예산 배분]: \\n       5천만원을 세미나 리드 확보 + 고품질 콘텐츠 제작에 집중하는 효율적 배분안 \\n\\n📢 [산출물 형식] \\n   3개월 후 MQL/PQL 확보 목표 달성을 위한 \\n   단계별 실행 계획 + 예산 배분표",
+                    desc: "IT 담당자 특성 반영, 신뢰 구축 중심, 단계별 전환 전략"
+                }
+            },
+            "데이터 시각화 가이드": {
+                basic: {
+                    text: `"월별 매출 데이터를 그래프로 만들어주세요. 트렌드를 보기 쉽게 시각화해주세요."`,
+                    desc: "단순 시각화 요청"
+                },
+                intermediate: {
+                    text: `"지난 12개월간 제품별 매출 데이터를 시각화해주세요. 임원진 보고용으로 성장 트렌드와 주요 성과를 강조하고 싶습니다. 가장 적합한 차트 유형을 제안하고 그 이유를 설명해주세요. 색상과 레이블 가이드도 포함하고, 엑셀에서 구현할 수 있는 방법도 알려주세요."`,
+                    desc: "목적 명확, 도구 활용법 포함"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   15년 차 데이터 시각화 전문가 \n   복잡한 데이터를 '5초 스토리'로 만드는 임원 보고 전문 컨설턴트 \n\n📊 [문제] \n   12개월간 제품별 매출 데이터(N개 제품 x 12개월)가 너무 복잡함 \n   기본 차트로는 '스파게티 차트'나 '데이터 무덤'이 됨 \n   핵심 메시지('성장 트렌드'와 '주요 성과')가 묻혀버림 \n\n📊 [맥락] \n   다음 주 C-level 보고용 핵심 시각화 자료 \n   목표는 '우리 비즈니스 성장세 + 핵심 제품' 메시지 전달 \n   임원진의 빠른 의사결정 지원이 목적 \n\n📊 [산출물] \n   임원진이 5초 안에 '전체 성장세'와 '잘한 제품'을 파악할 수 있는 \n   '스토리텔링형 보고용 차트 제작 가이드' 1건 \n\n📊 [작업절차] \n   (1) [최적 차트 제안]: \n       문제 해결에 가장 적합한 차트 유형 1-2개 제안 및 선택 근거 명시 \n   (2) [스토리텔링 가이드]: \n       성과 강조형 색상/레이블 가이드 (강조 제품 vs 배경 처리, 주석 방법 등) \n   (3) [엑셀 구현법]: \n       1단계부터 완성까지 상세한 클릭 가이드 (특정 제품 강조, 주석 등 고급 팁 포함) \n\n📊 [산출물 형식] \n   (1) 차트 제안 (2) 시각화 가이드 (3) 엑셀 구현 방법이 \n   명확히 구분된 실행 가이드",
+                    desc: "데이터 스토리텔링, C-level 보고 최적화, 엑셀 실무 구현"
+                }
+            },
+            "데이터 분석 보고서 작성": {
+                basic: {
+                    text: `"월별 매출 데이터를 분석해서 보고서로 만들어주세요."`,
+                    desc: "기본 분석 요청"
+                },
+                intermediate: {
+                    text: `"월별 매출 데이터를 분석해주세요. 전월 대비 증감률, Top 5 제품, 최저 실적 지역을 파악하고 싶습니다. 그래프 2-3개를 포함해서 결론을 앞쪽에 배치하고, 팀 회의 발표용으로 작성해주세요."`,
+                    desc: "분석 목표 명확, 형식 지정"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \\n   10년 차 시니어 데이터 분석가 \\n   복잡한 데이터를 '다음 액션' 도출용 스토리로 변환하는 전문가 \\n\\n📊 [문제] \\n   지난달 매출 원본 데이터(엑셀)가 숫자 덩어리로만 보임 \\n   '잘한 것'vs'개선할 것' 한눈에 파악 어려움 \\n   팩트 나열 보고는 액션 플랜 토론으로 이어지지 못함 \\n\\n📊 [맥락] \\n   다음 주 정기 팀 회의에서 '지난달 성과' 발표 \\n   목적은 '성과 공유'가 아닌 '이번 달 우선순위와 액션 아이템 설정' \\n   BLUF(결론부터 먼저) 제시가 매우 중요 \\n\\n📊 [산출물] \\n   '다음 액션 도출'을 위한 명확한 데이터 기반 인사이트가 담긴 \\n   '발표용 슬라이드 초안' 1세트 \\n\\n📊 [작업절차] \\n   (1) [Executive Summary]: \\n       모든 분석 바탕으로 '가장 잘한 점' 1가지와 '가장 시급한 문제' 1가지를 도출하여 첫 장에 배치 \\n   (2) [상세 분석]: \\n       전월대비 증감률 시각화 + 원인 추정 / Top 5 vs Bottom 5 제품 시사점 / 최저 실적 지역 이슈 분석 \\n   (3) [시각화]: \\n       그래프 2-3개에 Key Message를 제목/부제에 명확히 표기 \\n   (4) [Next Step]: \\n       '이번 달 논의/실행할 액션 아이디어' 2가지 제안 \\n\\n📊 [산출물 형식] \\n   총 5장 내외 슬라이드 (결론-상세분석-넥스트스텝)",
+                    desc: "BLUF 구조, 액션 중심 분석, 팀 회의 최적화"
+                }
+            },
+            "브리핑 자료 작성": {
+                basic: {
+                    text: `"신규 프로젝트 브리핑 자료를 만들어주세요. 프로젝트 개요와 주요 내용을 정리해주세요."`,
+                    desc: "기본 브리핑 요청"
+                },
+                intermediate: {
+                    text: `"신규 프로젝트 임원 브리핑 자료를 작성해주세요. 배경, 목표, 전략, 일정, 예산을 포함하고 5페이지 이내로 핵심만 간결하게 구성해주세요. 그래프나 차트도 포함해주세요."`,
+                    desc: "구조화, 간결성, 시각 자료"
+                },
+                advanced: {
+                    text: "📋 [페르소나] \\n   맥킨지(McKinsey) 출신 15년 차 전략 컨설턴트 \\n   C-Level의 '시간을 1초도 낭비하지 않게' 하는 임원 브리핑 전문가 \\n\\n📋 [문제] \\n   신규 프로젝트 임원 브리핑 자료 작성 필요 \\n   배경/목표/전략/일정/예산 등 '팩트 나열'로는 임원들의 핵심 의구심 해소 불가 \\n   '그래서 왜 지금 해야 하는데?'라는 질문에 답 못하면 프로젝트 표류 \\n\\n📋 [맥락] \\n   목표는 '보고'가 아닌 '설득'과 '승인' \\n   5페이지 안에 임원의 '의구심'을 '확신'으로 바꿔 'Go' 결정 유도 \\n   모든 페이지는 '사실 나열'이 아닌 '명확한 주장+근거'로 구성 \\n\\n📋 [산출물] \\n   임원의 'Go' 사인을 받아내는 \\n   '논거 중심의 5페이지 핵심 브리핑 자료(PPT 슬라이드 초안)' 1부 \\n\\n📋 [작업절차] \\n   (1) [Slide 1: The 'Why' (문제와 기회)]: \\n       배경을 '시급한 문제' 또는 '거대한 기회'로 재정의 \\n   (2) [Slide 2: The 'What' & 'How' (솔루션과 핵심 전략)]: \\n       목표+전략을 '구체적 해결책'과 '핵심 전략 3가지'로 명확 제시 \\n   (3) [Slide 3: The 'Proof' (핵심 데이터/차트)]: \\n       1-2번 슬라이드를 뒷받침하는 '가장 강력한 데이터' 1~2개 시각화 \\n   (4) [Slide 4: The 'When' (로드맵과 마일스톤)]: \\n       일정을 '핵심 마일스톤 기반 로드맵'으로 제시 \\n   (5) [Slide 5: The 'Ask' (필요 예산 및 리소스)]: \\n       예산을 '투자' 관점으로 제시, 정확한 예산+핵심 리소스 요구 \\n\\n📋 [산출물 형식] \\n   PPT/구글 슬라이드 5페이지 초안 \\n   각 슬라이드별 '핵심 메시지+본문+시각화' 구분된 마크다운 텍스트",
+                    desc: "청중 중심 설계, '사실'을 '논거'로 재구성, 결정 유도형 프레임워크"
+                }
+            },
+            "PRD(Product Requirement Document) 작성": {
+                basic: {
+                    text: `"모바일 앱에 알림 설정 기능을 추가하려고 합니다. 이 기능에 대한 PRD를 작성해주세요. 기본적인 기능 개요와 목적을 포함해주세요."`,
+                    desc: "기본적인 PRD 작성 요청"
+                },
+                intermediate: {
+                    text: `"개인화된 알림 설정 기능 PRD를 작성해주세요. 배경은 사용자 피드백 20건에서 알림 커스터마이징 니즈가 확인되었고, 목표는 사용자별 맞춤 알림 제공입니다. 주요 기능으로는 알림 종류별 on/off 설정과 시간대 조절이 있으며, 성공 지표는 알림 설정률 50% 이상 달성입니다. 개발 우선순위는 High로 설정하고, 기능/비기능 요구사항을 포함해서 작성해주세요."`,
+                    desc: "구조화된 PRD, 목표와 지표 명확"
+                },
+                advanced: {
+                    text: "📱 [페르소나] \\n   10년 차 시니어 프로덕트 매니저(PM) \\n   사용자 피드백의 '진짜 의도' 파악하여 개발자용 명확한 PRD로 변환하는 전문가 \\n\\n📱 [문제] \\n   현재 앱 알림 시스템이 '전체 ON/OFF'만 가능 \\n   사용자 20건 피드백: '유용한 알림은 원하지만 마케팅 알림은 스팸' \\n   이로 인한 '앱 알림 전체 차단' 또는 '앱 삭제' 위험 \\n\\n📱 [맥락] \\n   개인화된 알림 설정 기능으로 사용자 피로도 감소 및 앱 리텐션 향상 \\n   개발 우선순위 High, 알림 설정률 50% 이상 달성 목표 \\n   사용자가 필요한 알림만 '선택적' 수신 가능하게 구현 \\n\\n📱 [산출물] \\n   개발팀과 디자인팀이 즉시 작업 시작 가능한 \\n   '개인화된 알림 설정 기능 PRD' 1부 \\n\\n📱 [작업절차] \\n   (1) [배경 및 목표]: \\n       사용자 피드백 20건을 '문제 정의'로 재구성, 핵심 목표와 성공 지표 명시 \\n   (2) [User Stories]: \\n       핵심 사용자 시나리오 2-3가지를 'As a user, I want to...' 형식으로 작성 \\n   (3) [기능 요구사항 (Functional)]: \\n       알림 종류별 On/Off, 시간대 조절 구체 정의, 기본값과 설정 변경 피드백 명시 \\n   (4) [비기능 요구사항 (Non-functional)]: \\n       서버 저장, 로딩 속도, 네이티브 설정 호환성 등 포함 \\n   (5) [Out of Scope (범위 제외)]: \\n       AI 추천, 위치 기반 설정 등 이번 버전 제외 항목 명시 \\n\\n📱 [산출물 형식] \\n   Confluence/Notion 붙여넣기 가능한 마크다운 텍스트 \\n   6개 섹션 명확 구분 (배경/목표/지표/User Stories/기능요구사항/비기능요구사항/범위제외)",
+                    desc: "핵심 문제 재정의, 사용자 스토리 기반 접근, 범위 한정(Out of Scope) 명시"
+                }
+            },
+            "보고서 분석": {
+                basic: {
+                    text: `"첨부된 시장 조사 보고서를 분석해주세요. 주요 내용과 우리에게 중요한 시사점을 정리해주세요."`,
+                    desc: "기본적인 보고서 분석 요청"
+                },
+                intermediate: {
+                    text: `"경쟁사 A의 연간 보고서를 분석해주세요. 중점적으로 파악할 내용: 핵심 비즈니스 전략과 성과, 강점과 약점 분석, 우리 회사와의 비교 포인트. 3페이지 분량으로 요약하고 우리가 취해야 할 액션 아이템 5가지를 구체적으로 제시해주세요."`,
+                    desc: "목적 명확한 분석, 실행 중심"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \\n   15년 경력 M&A 및 기업 전략 컨설턴트 \\n   경쟁사 연간 보고서의 '행간'을 읽어 진짜 전략적 의도와 숨겨진 약점을 간파하는 전문가 \\n\\n📊 [문제] \\n   경쟁사 A의 100페이지 연간 보고서 발표 \\n   홍보성 문구와 방어적 재무 용어로 가득해 진짜 속내 파악 어려움 \\n   단순 요약으로는 '그래서 우리가 뭘 해야 하는지' 답변 불가 \\n\\n📊 [맥락] \\n   2026년 사업 전략 및 제품 로드맵 수립 시점 \\n   경쟁사 움직임 정확 예측하여 '비대칭 전략' 수립 필요 \\n   강점은 피하고 약점은 공략하는 전략적 대응 방안 도출 \\n\\n📊 [산출물] \\n   경쟁사 A의 '진짜 의도' 간파 및 즉시 실행 가능한 대응 방안 포함 \\n   '경쟁사 A 연간 보고서 핵심 전략 분석 리포트 (3페이지)' 1부 \\n\\n📊 [작업절차] \\n   (1) [핵심 비즈니스 전략 분석]: \\n       CEO 메시지, R&D 투자, M&A, 신규사업을 교차 분석하여 \\n       '공식 전략' vs '실제 투자 전략'의 차이 파악 \\n   (2) [성과 분석]: \\n       재무제표 분석하여 '수익성(Cash Cow)' vs '현금 소진처(Problem Child)' 구분 \\n   (3) [강점/약점(S&W) 분석]: \\n       '반복 키워드(강점)' vs '회피/모호 기술(약점/리스크)' 식별 \\n   (4) [우리 회사와 비교]: \\n       '우리가 위협받는 부분' vs '우리가 공략할 기회' 도출 \\n   (5) [액션 아이템 제안]: \\n       2026년 반드시 실행할 구체적 액션 아이템 5가지 제시 \\n\\n📊 [산출물 형식] \\n   경영진 보고용 3페이지 요약 리포트 (MS 워드) \\n   1. Executive Summary / 2. 상세분석 및 우리회사 비교 / 3. 5가지 액션아이템",
+                    desc: "'행간'과 '진짜 의도' 파악 요구, 교차 분석 지시, 구체적인 카운터-전략 요청"
+                }
+            },
+            "공고 작성": {
+                basic: {
+                    text: `"시니어 개발자 채용 공고를 작성해주세요. 기본적인 자격요건과 우대사항을 포함해주세요."`,
+                    desc: "기본 채용공고"
+                },
+                intermediate: {
+                    text: `"시니어 백엔드 개발자 채용 공고를 작성해주세요. 자격요건은 5년 이상, Python/Django 경험이고 우대사항으로 AWS, 스타트업 경험을 포함해주세요. 톤은 전문적이지만 친근하게 작성하고 회사 문화 소개도 포함해주세요."`,
+                    desc: "구체적 자격, 매력적 내용"
+                },
+                advanced: {
+                    text: "💼 [페르소나] \\n   15년 차 시니어 개발자 출신 테크니컬 리크루터 \\n   개발자 언어로 개발자 마음을 움직이는 실리콘밸리 스타트업 채용 전문가 \\n\\n💼 [문제] \\n   시니어 백엔드 개발자 채용 공고 작성 필요 \\n   기존 '스펙 나열식' 공고는 이미 좋은 직장의 5년차+ 시니어에게 어필 실패 \\n   '왜 이 회사로 이직해야 하는지' 명확한 답을 주지 못함 \\n\\n💼 [맥락] \\n   '전문적이지만 친근한' 문화의 팀 \\n   스펙이 아닌 '일하는 방식'과 '문제 해결의 즐거움' 공감하는 시니어 동료 필요 \\n   채용 공고 자체가 회사 문화의 첫인상임을 인지 \\n\\n💼 [산출물] \\n   기술 스펙은 명확하되 '기술적 도전 과제'와 '팀 문화'가 매력적으로 드러나는 \\n   '시니어 백엔드 개발자' 채용 공고문 1건 \\n\\n💼 [작업절차] \\n   (1) [매력적인 제목/소개]: \\n       평범한 제목 대신 시니어의 도전정신을 자극하는 'Hook' 제목과 도입부 작성 \\n   (2) [주요 업무 (The Challenge)]: \\n       '유지보수/개발' 대신 '설계/최적화/주도/구축' 등 오너십 강조 동사 사용 \\n   (3) [자격 요건 (Must-Have)]: \\n       '5년 이상', 'Python/Django' 명확 기술 \\n   (4) [우대 사항 (Nice-to-Have)]: \\n       'AWS/스타트업 경험'의 구체적 이유와 함께 기술 \\n   (5) [우리의 문화 (The Culture)]: \\n       '우리는 이렇게 일합니다' 섹션에 구체적 예시 포함 \\n\\n💼 [산출물 형식] \\n   채용 플랫폼 즉시 게시 가능한 마크다운 텍스트 \\n   7개 섹션 명확 구분 (제목/도입부/주요업무/자격요건/우대사항/일하는방식/합류과정)",
+                    desc: "타겟 페인포인트 공략, 문화적합성 강조, 역할과 미션 재정의"
+                }
+            },
+            "데이터 이상값 찾기": {
+                basic: {
+                    text: `"월별 매출 데이터에서 이상한 값이나 특이한 패턴을 찾아주세요."`,
+                    desc: "기본 이상값 탐지"
+                },
+                intermediate: {
+                    text: `"월별 매출 데이터에서 평균에서 크게 벗어난 값을 찾아주세요. 통계적 기준을 제시하고 이상값 리스트와 가능한 원인을 추정해주세요. 시각화 차트로도 보여주세요."`,
+                    desc: "통계적 기준, 원인 분석"
+                },
+                advanced: {
+                    text: "📈 [페르소나] \\n   15년 차 시니어 데이터 과학자 및 비즈니스 분석가 \\n   복잡한 데이터셋에서 '숨겨진 패턴'과 '치명적인 이상치'를 찾아내는 전문가 \\n\\n📈 [문제] \\n   3년치 데이터와 외부 변수 데이터 보유 \\n   통계 비전문가로서 '숫자가 튀는 것' vs '입력 오류' vs '중대한 비즈니스 사건' 구분 불가 \\n   이 데이터 기반 다음 분기 계획 수립 시 위험성 우려 \\n\\n📈 [맥락] \\n   다음 주 '연간 비즈니스 전략 회의' 기초 자료로 활용 예정 \\n   데이터 숨겨진 '함정'이나 '기회' 놓치면 잘못된 의사결정 위험 \\n   통계 전문가 눈으로 데이터 '신뢰도' 검증 및 '이상 신호' 탐지 필요 \\n\\n📈 [산출물] \\n   데이터 문외한도 즉시 심각성 인지하고 '다음 조치' 취할 수 있는 \\n   '다차원 이상치 탐지 및 조치 보고서' 1부 \\n\\n📈 [작업절차] \\n   (1) [최고 수준의 이상치 탐지]: \\n       15년 차 전문성으로 3년치 데이터의 다차원적 관계, 시계열 패턴, 외부 맥락 고려 \\n       통계적/비즈니스적으로 설명 안 되는 '진짜 이상치' 식별 \\n   (2) [이상치 'Case File' 작성]: \\n       각 이상치별 개별 분석 파일 작성 \\n       - 심각도 등급 (High/Med/Low) \\n       - 예상 발생 원인 3가지 \\n       - 전문가 판단 (Error vs Event) 및 근거 \\n       - 즉각 후속 조치 방안 \\n\\n📈 [산출물 형식] \\n   1. Executive Summary (High 등급 이상치 Top 3) \\n   2. 상세 분석 (Case File 목록, 테이블 형식)",
+                    desc: "전문가 권한 위임, 기술 용어의 추상화, '판단'과 '근거' 요구"
+                }
+            },
+            "성과 리뷰 작성": {
+                basic: {
+                    text: `"상반기 개인 성과 리뷰를 작성해주세요. 목표 달성도와 주요 성과를 정리해주세요."`,
+                    desc: "기본 성과 정리"
+                },
+                intermediate: {
+                    text: `"상반기 성과 리뷰를 작성해주세요. 목표 3개와 달성도, 주요 성과 5가지, 배운 점과 어려웠던 점, 하반기 개선 계획을 포함해주세요. 상사와의 1:1 미팅 준비용으로 구성해주세요."`,
+                    desc: "구조화, 성찰적 분석"
+                },
+                advanced: {
+                    text: "💼 [페르소나] \\n   커리어 코치이자 퍼포먼스 리뷰 전략가 \\n   원본 데이터를 '승진 및 보상'을 위한 강력한 논거로 재구성하는 전문가 \\n\\n💼 [문제] \\n   데이터/피드백이 있지만 단순한 '사실의 나열'에 불과 \\n   그대로 제출 시 '전략적 기여'나 '성장'이 매니저에게 제대로 전달 안 됨 \\n   승진이나 보상 협상에서 불리한 위치에 설 위험 \\n\\n💼 [맥락] \\n   1년 커리어가 달린 '연간 성과 리뷰' 시즌 \\n   단순 요약이 아닌 '왜 승진/보상받아야 하는지' 증명하는 공식 근거 자료 \\n   '일했다'를 넘어 '성장+미래 기여' 명확히 제시 필요 \\n\\n💼 [산출물] \\n   데이터 기반으로 '승진/보상'을 강력하게 뒷받침하는 \\n   '논리적이고 설득력 있는 자기 성과 리뷰 및 커리어 로드맵 제안서' 1부 \\n\\n💼 [작업절차] \\n   (1) [핵심 성과 요약]: \\n       데이터+피드백 교차 분석하여 정량적 성과+정성적 성장을 Executive Summary로 압축 \\n   (2) [상세 분석 및 시각화]: \\n       목표 대비 달성도를 텍스트 기반 시각화(테이블) 포함하여 상세 분석 \\n   (3) [방어 논리 (Q&A)]: \\n       매니저 예상 질문 5가지와 전략적 답변 준비 \\n   (4) [미래 제안 (Next Level)]: \\n       - 강점 활용한 팀/회사 추가 기여 방안 3가지 \\n       - 개발 영역 인정 및 구체적 학습 계획 \\n   (5) [승진 논거 (The Case)]: \\n       커리어 로드맵과 연결하여 '승진/보상 대상' 최종 논거 제시 \\n\\n💼 [산출물 형식] \\n   매니저 즉시 제출 가능한 전문 보고서 (마크다운) \\n   톤: 자신감 있지만 겸손, 데이터 기반이지만 통찰력 담은",
+                    desc: "데이터 기반, 전략적 커리어 설계"
+                }
+            },
+            "피드백 감성 분석": {
+                basic: {
+                    text: `"고객 리뷰나 피드백의 감성을 분석해주세요. 긍정적인지 부정적인지 분류해주세요."`,
+                    desc: "감성 분류 요청"
+                },
+                intermediate: {
+                    text: `"고객 리뷰 100개를 감성 분석해주세요. 긍정/중립/부정 비율을 산출하고 주요 키워드를 추출해주세요. 가장 많이 언급된 불만 Top 5를 찾고 개선 우선순위를 제시해주세요."`,
+                    desc: "구조화, 인사이트 도출"
+                },
+                advanced: {
+                    text: "📝 [페르소나] \n   10년 차 VOC(Voice of Customer) 분석 전문가 및 CX 전략가 \n   비정형 고객 리뷰에서 '진짜 문제'의 근본 원인을 찾고 비즈니스 우선순위 도출하는 전문가 \n\n📝 [문제] \n   100개 최신 고객 리뷰(배송 불만/기능 오류/상담원 칭찬 등) 혼재 \n   날것(Raw) 텍스트 덩어리 상태로 '가장 큰 문제' vs '먼저 고칠 것' 객관 판단 불가 \n   '목소리 큰 사람' 아닌 '데이터 기반' 의사결정 필요 \n\n📝 [맥락] \n   다음 주 '월간 제품/서비스 개선 기획 회의' 발표 예정 \n   개발팀+운영팀의 '다음 달 스프린트 우선순위' 결정 핵심 근거 자료 \n   실행 가능한 액션 아이템 도출이 목표 \n\n📝 [산출물] \n   고객 목소리를 '실행 가능한 액션 아이템'으로 변환한 \n   '고객 리뷰(VOC) 분석 및 개선 우선순위 제안 보고서' 1부 \n\n📝 [작업절차] \n   (1) [감성 분석]: \n       100개 리뷰 전체를 긍정/중립/부정 분류 및 정확한 비율(%) 산출 \n   (2) [핵심 키워드/토픽 추출]: \n       긍정+부정 리뷰에서 각각 가장 많이 언급된 핵심 키워드 5개씩 추출 \n   (3) [Top 5 불만 식별]: \n       '부정 감성이 강하게 결합된' 치명적이고 시급한 불만 사항 식별 \n   (4) [개선 우선순위 제안]: \n       Top 5 불만의 개선 우선순위(High/Med/Low) 및 명확한 근거 제시 \n\n📝 [산출물 형식] \n   기획 회의 즉시 보고 가능한 마크다운 텍스트 보고서 \n   4개 구조: 1. 요약 / 2. 상세 감성 분석 / 3. 주요 키워드 / 4. Top 5 불만+우선순위",
+                    desc: "정성적 데이터의 정량화, 데이터 기반 의사결정, 근본 원인 및 우선순위 도출"
+                }
+            },
+            "업무 자동화 프로세스 개발": {
+                basic: {
+                    text: `"매주 반복하는 업무를 자동화할 수 있는 방법을 알려주세요."`,
+                    desc: "기본 자동화 상담"
+                },
+                intermediate: {
+                    text: `"매주 하는 업무 자동화 방안을 제시해주세요. 현재 주간 보고서 데이터를 5개 엑셀 파일에서 복사해서 붙여넣는 작업에 1시간이 걸리는데, 자동화로 10분 이내로 단축하고 싶습니다. 가능한 방법을 제시해주세요."`,
+                    desc: "구체적 상황, 목표 명확"
+                },
+                advanced: {
+                    text: "🔧 [페르소나] \\n   15년 차 RPA(Robotic Process Automation) 컨설턴트이자 '업무 자동화' 아키텍트 \\n   '반복적이고 비효율적인 수동 업무'를 분석하여 가장 간단하고 빠르며 유지보수하기 쉬운 자동화 솔루션 설계 전문가 \\n\\n🔧 [문제] \\n   매우 비효율적인 수동 업무를 매일/매주/매월 반복 중 \\n   인적 오류(Human Error) 발생 가능성 높음 \\n   귀중한 시간 낭비 상황 \\n\\n🔧 [맥락] \\n   목표는 As-Is를 To-Be로 바꿔 리드타임 획기적 단축 \\n   기술 수준과 제약 조건 고려한 최적 솔루션 필요 \\n   비전문가와 전문가 방안 모두 검토 \\n\\n🔧 [산출물] \\n   As-Is를 To-Be로 바꿀 수 있는 \\n   '업무 자동화 솔루션 설계 및 실행 계획서' 1부 \\n\\n🔧 [작업절차] \\n   (1) [솔루션 2-3가지 제안]: \\n       No-code/Low-code 방안(MS 파워 오토메이트, 엑셀 파워 쿼리)과 \\n       코딩 기반 강력한 방안(Python, VBA) 2-3가지 제안 \\n   (2) [솔루션 비교 분석]: \\n       초기 세팅 난이도, 실행 속도, 유지보수 용이성, 확장성 기준 \\n       장단점 명확 비교 테이블 작성 \\n   (3) [최적 솔루션 추천]: \\n       Target Time과 Constraints 고려한 가장 현실적이고 효과적인 솔루션 1개 추천 및 근거 제시 \\n   (4) [핵심 구현 단계]: \\n       Step-by-step 구현 방법과 실행 로직, 가상 코드 상세 제시 \\n\\n🔧 [산출물 형식] \\n   1. 솔루션 비교 분석 테이블 \\n   2. 최적 솔루션 추천 및 근거 \\n   3. Step-by-Step 구현 가이드",
+                    desc: "As-Is와 To-Be 정의, 명확한 제약 조건 설정, 대안 솔루션 비교 요구"
+                }
+            },
+            "대화/발표 스크립트 작성": {
+                basic: {
+                    text: `"신제품 소개 발표를 위한 대화 스크립트를 작성해주세요."`,
+                    desc: "기본 스크립트 작성"
+                },
+                intermediate: {
+                    text: `"신제품 발표를 위한 10분 스크립트를 작성해주세요. 청중은 잠재 고객 100명이고, 문제 제기 → 솔루션 소개 → 데모 → 행동 유도 순서로 구성해주세요. 톤은 열정적이고 설득력 있게, 스토리텔링을 포함해주세요."`,
+                    desc: "구조화, 청중 맞춤설계"
+                },
+                advanced: {
+                    text: "🎤 [페르소나] \\n   애플(Apple) 키노트 스피치 담당 '최고의 프로덕트 에반젤리스트' \\n   10분 안에 100명의 청중을 '잠재 고객'에서 '열성 팬'으로 바꾸는 스토리텔링 전문가 \\n\\n🎤 [문제] \\n   신제품을 100명의 잠재 고객에게 10분 안에 발표해야 함 \\n   기능 나열식의 지루한 스크립트로는 청중의 마음을 사로잡을 수 없음 \\n   강력한 서사(Narrative)가 필요 \\n\\n🎤 [맥락] \\n   10분은 신제품 성패가 달린 결정적인 순간 \\n   'What'이 아닌 'Why'에 초점 - 고객의 삶을 어떻게 바꾸는지 \\n   문제 제기 → 솔루션 소개 → 데모 → 행동 유도 4단계 구조 필수 \\n\\n🎤 [산출물] \\n   청중의 감정을 움직이고 즉각적인 행동을 유도하는 \\n   '스토리텔링 기반 10분 신제품 발표 연설 스크립트' 1부 \\n\\n🎤 [작업절차] \\n   (1) [The Hook (Problem / 2분)]: \\n       청중 100명 모두가 '내 얘기잖아!'라고 공감할 수 있는 강력한 스토리로 시작 \\n       공통의 문제(Problem) 제시 \\n   (2) [The Turn (Solution / 3분)]: \\n       신제품을 '기능'이 아닌, 문제를 해결하는 '유일한 영웅(Solution)'으로 극적 소개 \\n   (3) [The 'Wow' (Demo / 3분)]: \\n       청중이 감탄할 수밖에 없는 가장 핵심적인 고객 가치 하나를 시연 \\n   (4) [The Close (CTA / 2분)]: \\n       명확하고 강력하며 거부할 수 없는 단 하나의 행동 유도 메시지로 마무리 \\n\\n🎤 [산출물 형식] \\n   무대에서 바로 읽을 수 있는 말하는 어조(Spoken Language) \\n   무대 지시사항과 슬라이드 전환 타이밍이 포함된 전문 연설 스크립트",
+                    desc: "청중 중심 스토리텔링, 감정적 연결 요구, 'Wow' 모멘트 설계"
+                }
+            },
+            "업무 매뉴얼 및 가이드 작성": {
+                basic: {
+                    text: `"신입 직원을 위한 기본 업무 매뉴얼을 작성해주세요."`,
+                    desc: "기본 매뉴얼 작성"
+                },
+                intermediate: {
+                    text: `"신입 사원 업무 가이드를 작성해주세요. 주요 업무 10가지를 선정하고 각 업무별로 단계별 설명과 주의사항, 유용한 팁을 포함해주세요. 담당자 연락처와 FAQ도 포함해주세요."`,
+                    desc: "구조화, 실용적 내용"
+                },
+                advanced: {
+                    text: "📋 [페르소나] \\n   10년 차 HRD(인적자원개발) 전문가이자 '신규 입사자 온보딩 경험' 설계 전문가 \\n   '문서 더미'가 아닌 신규 입사자가 첫 30일 동안 빠르게 적응할 수 있는 실용적인 플레이북 제작 전문가 \\n\\n📋 [문제] \\n   신규 직원에게 공유할 업무 가이드 제작 필요 \\n   어떤 형식, 내용, 순서로 제공해야 할지 막막함 \\n   정보 과부하로 인한 온보딩 쇼크와 반복 질문 우려 \\n\\n📋 [맥락] \\n   목표는 Time-to-Productivity 획기적 단축과 심리적 안정감 제공 \\n   모든 것이 아닌 지금 당장 필요한 것을 스스로 찾을 수 있게 만드는 것이 핵심 \\n   조기 퇴사 방지 \\n\\n📋 [산출물] \\n   신규 입사자가 스스로 학습하고 적응할 수 있도록 돕는 \\n   '사용자 중심 업무 가이드(Onboarding Playbook) 설계안 및 템플릿' 1부 \\n\\n📋 [작업절차] \\n   (1) [최적 형식 제안]: \\n       노션(Notion)이나 위키(Wiki) 기반 살아있는 문서의 장점 설명 \\n       (검색 용이성, 지속적 업데이트 가능성) \\n   (2) [핵심 구성안 설계]: \\n       신규 입사자의 30일 여정(Day 1, Week 1, Month 1)에 맞춘 핵심 섹션 설계 \\n       Day 1: 생존 키트 / Week 1: 팀 워킹 방법 / Month 1: 업무 마스터링 \\n   (3) [진짜 FAQ 도출]: \\n       매니저나 동료에게 물어보기 민망하지만 꼭 알고 싶은 FAQ 10가지 도출 \\n\\n📋 [산출물 형식] \\n   바로 신규 입사자 온보딩 가이드 페이지로 만들 수 있는 \\n   친절하고 명확하며 환영하는 톤의 마크다운 템플릿",
+                    desc: "'문서 더미'의 문제 정의, 사용자 여정 기반 설계, '진짜' FAQ 도출 "
+                }
+            },
+            "계획서 작성": {
+                basic: {
+                    text: `"신규 사업 계획서를 작성해주세요. 기본적인 사업 아이템과 목표를 정리해주세요."`,
+                    desc: "기본 사업계획"
+                },
+                intermediate: {
+                    text: `"신규 서비스 사업 계획서를 작성해주세요. 시장 분석, 경쟁사 분석, 차별화 포인트와 비즈니스 모델, 수익 구조를 포함해주세요. 3년간 재무 계획과 팀 구성 및 일정도 제시하고, 투자자 설득용으로 구성해주세요."`,
+                    desc: "구조화, 설득용 구성"
+                },
+                advanced: {
+                    text: "💼 [페르소나] \\n   수천 개의 사업 계획서를 검토하고 수십억 달러의 투자를 집행한 실리콘밸리 Top-Tier VC 파트너 \\n   30초 안에 치명적인 약점을 간파하고 강력한 투자 논거를 구축하는 전문가 \\n\\n💼 [문제] \\n   신규 서비스 아이디어와 필요한 재료들은 있지만 단순 나열로는 부족 \\n   투자자의 핵심 의구심(Why this? Why now? Why this team?) 해소 논거 부족 \\n   '그저 그런 아이디어'로 보일 위험성 \\n\\n💼 [맥락] \\n   목적은 '보고'가 아닌 '투자 유치' \\n   시장의 거대한 틈을 꿰뚫는 100배 성장 기회임을 증명하는 영업 자료 \\n   지금 당장 투자해야 할 필연적인 미래임을 보여줘야 함 \\n\\n💼 [산출물] \\n   Top-Tier 투자자들의 체크리스트를 완벽하게 통과하고 \\n   즉각적인 투자 미팅을 이끌어낼 수 있는 \\n   '설득력 있고 공격적인 신규 서비스 사업 계획서(Investment Deck)' 1부 \\n\\n💼 [작업절차] \\n   (1) [The 'Why Now?' (시장/경쟁사 분석)]: \\n       시장 분석을 고객이 겪는 가장 고통스러운 Pain Point로 재정의 \\n       경쟁사 분석은 기존 강자들이 놓치는 명확한 White Space 증명 \\n   (2) [The 'Unfair Advantage' (차별화/BM/수익)]: \\n       경쟁사가 따라할 수 없는 우리만의 강력한 무기를 한 문장으로 정의 \\n   (3) [The 'ROI Story' (3년 재무 계획)]: \\n       비용이 아닌 투자 관점으로 제시, 성장 핵심 가정과 단위 경제성 명확화 \\n   (4) [The 'Why This Team' (팀/일정)]: \\n       시장 장악에 완벽한 경험을 가진 드림팀임을 증명, 실행력의 증거 제시 \\n\\n💼 [산출물 형식] \\n   투자자에게 바로 발송 가능한 전략적 내러티브 순서의 \\n   전문 투자 제안서 (PPT 슬라이드 덱 또는 상세 워드 문서)",
+                    desc: "투자자 관점 재구성, 'Why Now' 강조, 'Unfair Advantage' 정의"
+                }
+            },
+            "FAQ 생성": {
+                basic: {
+                    text: `"신규 서비스를 위한 기본 FAQ를 작성해주세요."`,
+                    desc: "기본 FAQ 작성"
+                },
+                intermediate: {
+                    text: `"신규 서비스 FAQ를 작성해주세요. 대상은 일반 사용자이고 가입, 이용방법, 결제, 문제해결 카테고리로 각각 3-5개씩 작성해주세요. 톤은 친절하고 쉽게 이해할 수 있도록 구성하고, 실제 고객이 자주 묻는 질문들을 참고해주세요."`,
+                    desc: "구조화, 사용자 친화적"
+                },
+                advanced: {
+                    text: "❓ [페르소나] \n   10년 차 CX(고객 경험) 라이터이자 헬프센터 콘텐츠 설계 전문가 \n   신규 사용자의 불안감을 해소하고 신뢰를 주는 FAQ 작성으로 CS 티켓을 획기적으로 줄이는 전문가 \n\n❓ [문제] \n   신규 서비스의 FAQ 작성 필요 \n   뻔한 카테고리와 기능 설명형 Q&A로는 진짜 불안감이나 Pain Point 해결 불가 \n   아무도 읽지 않는 FAQ로 인한 CS 채널 폭주 \n\n❓ [맥락] \n   목표는 신규 사용자가 아무런 도움 없이도 서비스를 성공적으로 이용하게 만드는 셀프 서비스 가이드 \n   가장 좌절하는 순간(Frustration Point)을 선제적으로 짚어주고 명쾌한 해답 제공 \n   신뢰 구축이 핵심 \n\n❓ [산출물] \n   신규 사용자의 첫 10분을 완벽하게 지원하고 CS 티켓을 획기적으로 줄일 수 있는 \n   '고객 중심의 FAQ 리스트' 1부 \n\n❓ [작업절차] \n   (1) [카테고리 구성]: \n       4가지 핵심 카테고리(가입, 이용방법, 결제, 문제해결) 구성 \n   (2) [진짜 고객 질문 도출]: \n       각 카테고리별 3-5개의 진짜 고객 질문 작성 \n       고객의 입장(1인칭)에서 불안함이나 궁금증을 묻는 형식 \n   (3) [명쾌한 답변 초안]: \n       친절하고 쉬운 톤으로 정확한 Action이 명확한 답변 작성 \n\n❓ [산출물 형식] \n   헬프센터나 웹사이트에 바로 삽입 가능한 \n   4가지 카테고리가 명확히 구분된 Q&A 세트 마크다운 텍스트",
+                    desc: "고객 불안감 선제적 해결, '기능' 질문이 아닌 '고객' 질문, 셀프 서비스 가이드 역할"
+                }
+            },
+            "커뮤니케이션 가이드라인 개발": {
+                basic: {
+                    text: `"팀을 위한 기본적인 커뮤니케이션 가이드라인을 만들어주세요."`,
+                    desc: "기본 가이드라인"
+                },
+                intermediate: {
+                    text: `"팀 커뮤니케이션 가이드라인을 작성해주세요. 이메일, 슬랙, 미팅 등 채널별 용도와 응답 시간 기준, 에스컬레이션 규칙을 정해주세요. 문서 작성 원칙과 해야 할 일과 하지 말아야 할 일들을 포함해주세요."`,
+                    desc: "구조화, 실용적 내용"
+                },
+                advanced: {
+                    text: "💬 [페르소나] \n   애자일 코치이자 비동기(Asynchronous) 업무 문화 설계 전문가 \n   소음을 줄이고 생산성을 높이며 팀원들이 중요한 일에 집중할 수 있는 커뮤니케이션 시스템 설계 전문가 \n\n💬 [문제] \n   팀 커뮤니케이션 가이드라인 필요 \n   이메일/슬랙/미팅의 용도가 불분명하고 즉시 응답 압박 존재 \n   정보 과부하와 잦은 맥락 전환으로 인한 커뮤니케이션 혼돈 상태 \n\n💬 [맥락] \n   목표는 빠른 응답이 아닌 명확한 소통 \n   실시간/비동기 응답 기준에 대한 명확한 합의 필요 \n   불필요한 회의와 긴급 알림 50% 줄이고 집중 근무 시간 확보 \n\n💬 [산출물] \n   소음은 줄이고 집중은 높이는 팀의 생산성과 심리적 안정감을 위한 \n   '팀 커뮤니케이션 헌장(Charter) 및 플레이북' 1부 \n\n💬 [작업절차] \n   (1) [채널별 용도 및 규칙 정의]: \n       이메일(공식 기록, 외부 소통, 24시간 내 응답) \n       슬랙(비공식 내부 논의, 비동기 원칙) \n       미팅(논의/합의 필요시만, No Agenda No Meeting) \n   (2) [에스컬레이션 규칙]: \n       3단계 에스컬레이션 규칙 명확 정의 \n   (3) [문서 작성 원칙]: \n       모든 결정사항 기록 원칙하에 3가지 원칙 정의 \n   (4) [Do's & Don'ts]: \n       바로 실천 가능한 해야 할 일과 하지 말아야 할 일 각 5가지 요약 \n\n💬 [산출물 형식] \n   팀 헌장 페이지에 즉시 게시할 수 있는 \n   섹션 구분이 명확하고 가독성 높은 마크다운 텍스트",
+                    desc: "'소음'과 '집중'의 정의, 비동기(Asynchronous) 원칙 수립, 채널별 명확한 역할 부여"
+                }
+            },
+            "설문 질문 생성": {
+                basic: {
+                    text: `"우리 서비스에 대한 고객 만족도 조사 설문지를 만들어주세요. 기본적인 만족도 측정과 개선 의견을 수집할 수 있는 질문들을 포함해주세요."`,
+                    desc: "기본적인 설문 질문 생성"
+                },
+                intermediate: {
+                    text: `"제품 개선을 위한 사용자 설문조사를 설계해주세요. 총 10문항으로 구성하고, 목표는 현재 불편사항과 개선 아이디어 수집입니다. 질문 유형은 척도형(1-5점), 선택형(객관식), 서술형(주관식)을 적절히 혼합해주세요. 응답 소요 시간은 5분 이내로 하고, 질문 간의 논리적 흐름도 고려해서 구성해주세요."`,
+                    desc: "목적 명확한 설계, 효율적 구성"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   10년 차 UX 리서처 및 설문조사 설계 전문가 \n   '표면 질문'을 피하고 '숨겨진 니즈'를 발견하는 제품 개선 설문 설계 전문가 \n\n📊 [문제] \n   제품 개선 설문조사 필요하지만 10문항/5분 제약 존재 \n   '어떤 기능 필요하세요?' 같은 표면 질문으로는 실행 가능한 개선점 도출 불가 \n   개발팀이 '다음 할 일' 명확히 알 수 있는 설문 설계 어려움 \n\n📊 [맥락] \n   목표는 만족도 확인이 아닌 '제품 로드맵 우선순위' 도출 \n   5분 내 사용자 좌절 지점과 개선 아이디어를 효과적으로 수집 \n   다음 분기 개발 계획의 핵심 근거 자료 \n\n📊 [산출물] \n   5분 내 응답 가능하고 숨겨진 니즈까지 포착하는 \n   '제품 개선 사용자 설문조사 문항 10개 세트' 1부 \n\n📊 [작업절차] \n   (1) [깔때기 구조 설계]: \n       가벼운 질문(사용 빈도) → 핵심 불편사항 → 구체적 아이디어 → 우선순위 순서로 10문항 배치 \n   (2) [척도형 질문 3-4개]: \n       전반적 만족도와 핵심 기능별 만족도를 1-5점 척도로 측정 \n   (3) [선택형 질문 2-3개]: \n       가장 불편한 영역과 자주 사용하는 기능을 객관식으로 파악 \n   (4) [서술형 질문 2-3개]: \n       '최근 사용 중 아쉬웠던 순간'처럼 경험과 맥락 중심의 고품질 주관식 질문 \n   (5) [우선순위 질문 1개]: \n       '단 하나만 개선한다면' 형식의 마무리 우선순위 질문 \n\n📊 [산출물 형식] \n   구글 폼/타입폼에 바로 사용 가능한 \n   질문 번호, 유형, 내용이 구분된 마크다운 텍스트",
+                    desc: "깔때기 구조 설계, '표면'이 아닌 '경험' 질문, 개선 우선순위 도출"
+                }
+            },
+            "제안서 작성": {
+                basic: {
+                    text: `"사내 업무 효율화를 위한 새로운 협업 도구 도입 제안서를 작성해주세요. 기본적인 배경, 목적, 기대효과를 포함해주세요."`,
+                    desc: "기본 제안서 작성"
+                },
+                intermediate: {
+                    text: `"고객 서비스 개선을 위한 AI 챗봇 도입 제안서를 작성해주세요. 목표는 고객 만족도 30% 향상이고, 응대 시간 50% 단축을 통해 비용 20% 절감을 목표로 합니다. 예산 5천만원 범위에서 배경-제안내용-예산-일정 순서로 구성해주세요."`,
+                    desc: "구체적 목표, 구조화"
+                },
+                advanced: {
+                    text: "💼 [페르소나] \n   10년 차 DX 전문 컨설턴트 \n   조직 비효율을 진단하고 측정 가능한 생산성 향상을 위한 협업 도구 도입 전략 설계 전문가 \n\n💼 [문제] \n   새로운 협업 도구 도입 제안서 작성 필요 \n   배경/목적/기대효과 나열만으로는 경영진 핵심 의구심 해소 불가 \n   'ROI가 얼마?', '사람들이 쓸까?' 질문에 답할 논거 부족 \n\n💼 [맥락] \n   목표는 승인. 단순 구매 요청이 아닌 경영 전략 제안서 \n   현재 낭비 비용을 미래 투자로 전환하는 프레이밍 필요 \n   도입이 아닌 '도입 성공'까지의 완전한 그림 제시 \n\n💼 [산출물] \n   경영진 핵심 의구심 3가지(Why? So What? How?)를 해소하는 \n   '전략적 협업 도구 도입 제안서' 1부 \n\n💼 [작업절차] \n   (1) [배경 - 현재 손실]: \n       정보 사일로화로 인한 검색 시간 낭비, 버전 충돌 재작업 등 \n       정성적 불편함을 정량적 손실로 수치화 \n   (2) [목적 - 해결책]: \n       도구 도입이 아닌 (1)의 문제 해결로 재정의 \n       정보 검색 시간 90% 단축, 재작업률 0% 달성 등 명확한 목표 \n   (3) [기대효과 - ROI]: \n       기능이 아닌 비즈니스 성과 중심 제시 \n       손실 절감 효과를 투자 대비 효과로 정량화 \n   (4) [도입 성공 전략]: \n       파일럿 테스트, 단계별 확산 계획, 교육 및 온보딩 지원 방안 포함 \n\n💼 [산출물 형식] \n   경영진 보고용 전문 제안서 마크다운 \n   요약/현 문제 진단/개선 목표/솔루션 및 ROI/도입 전략 구조",
+                    desc: "'비용'이 아닌 '투자'로 프레이밍, 도입이 아닌 '도입 성공' 전략, 정성적 문제를 정량적 '손실'로"
+                }
+            },
+            "공지/안내 자료 작성": {
+                basic: {
+                    text: `"사내 시스템 업데이트에 따른 전사 공지문을 작성해주세요. 날짜, 내용, 주의사항을 포함해주세요."`,
+                    desc: "기본 공지문 작성"
+                },
+                intermediate: {
+                    text: `"시스템 점검을 위한 전사 공지문을 작성해주세요. 일시는 3월 15일 02:00-06:00이고 모든 서비스가 중단됩니다. 대체 방안으로 모바일 앱 이용이 가능하며, 정중하고 친절하게 양해를 구하는 톤으로 작성하고 문의처도 안내해주세요."`,
+                    desc: "구체적 내용, 친절한 안내"
+                },
+                advanced: {
+                    text: "📢 [페르소나] \n   15년 차 IT 인프라팀 리더 및 내부 커뮤니케이션 전문가 \n   민감한 기술적 사실을 불안감 없이 명확하게 전달하는 시스템 공지 전문가 \n\n📢 [문제] \n   시스템 점검으로 인한 서비스 중단 공지 필요 \n   '모든 서비스 중단' 메시지가 업무 마비 불안감 유발 가능 \n   불명확한 공지로 인한 헬프데스크 문의 폭주 우려 \n\n📢 [맥락] \n   목표는 불안감 최소화와 사전 인지 확실히 하기 \n   서비스 안정화 목적 강조하고 대체 방안 선제적 안내 필수 \n   정중하고 친절한 톤으로 업무 공백 없음 강조 \n\n📢 [산출물] \n   직원들이 불안 대신 안심하고 대체 방안을 명확히 인지할 수 있는 \n   '친절하고 정중한 시스템 점검 공지문' 1부 \n\n📢 [작업절차] \n   (1) [안심시키는 제목]: \n       '서비스 중단'보다 '안정적인 서비스를 위한' 목적 강조 제목 작성 \n   (2) [정중한 도입 및 목적 설명]: \n       친절한 인사와 함께 서비스 안정화 필요성 먼저 설명하여 양해 구함 \n   (3) [핵심 정보 명확화]: \n       일시와 영향 범위를 볼드/박스 처리로 독자가 놓치지 않게 고지 \n   (4) [대체 방안 선제적 제시]: \n       점검 시간 중 모바일 앱 정상 이용 가능함을 즉시 명확히 안내 \n   (5) [마무리 및 문의처]: \n       정중한 사과와 양해 재차 구하며 문의처 명시 \n\n📢 [산출물 형식] \n   이메일/사내 게시판 즉시 사용 가능한 \n   제목과 본문이 완전히 구성된 텍스트",
+                    desc: "명확한 영향 범위 명시, 선제적 대안 제시, 불안감 해소 톤"
+                }
+            },
+            "반복성 작업 자동화": {
+                basic: {
+                    text: `"매일 반복하는 업무를 자동화할 수 있는 방법을 알려주세요. 어떤 작업들이 자동화 가능한지 알고 싶습니다."`,
+                    desc: "기본 자동화 상담"
+                },
+                intermediate: {
+                    text: `"매일 10개 사이트에서 데이터를 복사해서 엑셀에 정리하는 작업을 자동화하고 싶습니다. 현재 30분이 걸리는데 엑셀 매크로나 다른 도구로 자동화가 가능한지 알려주세요. 각 방법의 난이도와 효과, 예상 시간 단축 효과를 비교해주세요."`,
+                    desc: "구체적 상황, 방법 비교"
+                },
+                advanced: {
+                    text: "🔧 [페르소나] \n   15년 차 RPA 컨설턴트 및 생산성 아키텍트 \n   바쁜 업무 패턴을 진단하여 쉽고 빠른 자동화 지점을 찾는 Small Win 전문가 \n\n🔧 [문제] \n   반복 업무에 시간 낭비하고 있다는 막연한 느낌 \n   무엇을 어떻게 자동화할지 감 잡지 못하는 상황 \n   거창한 시스템이 아닌 현실적 자동화 방안 필요 \n\n🔧 [맥락] \n   목표는 막연한 니즈를 즉시 실행 가능한 1순위 과제로 전환 \n   내일 당장 30분이라도 절약할 수 있는 가장 간단한 방안 찾기 \n   현실적이고 즉각적인 자동화 솔루션 1가지 도출 \n\n🔧 [산출물] \n   업무 리스트 진단을 통한 가장 쉬운 방법이 포함된 \n   '1순위 자동화 과제 진단 리포트' 1부 \n\n🔧 [작업절차] \n   (1) [업무 리스트 진단]: \n       반복성/규칙성/시간 소모도 3가지 기준으로 자동화 적합성 평가 \n   (2) [Top 3 후보 식별]: \n       자동화 효율이 가장 높을 것으로 예상되는 Top 3 후보 선별 \n   (3) [1순위 과제 선정]: \n       가장 즉각적이고 간단하게 시작할 수 있는 Small Win 과제 선정 \n   (4) [가장 쉬운 방법 제시]: \n       제약 조건 하에서 핵심 실행 로직(1-3단계) 포함한 솔루션 제안 \n\n🔧 [산출물 형식] \n   1. 자동화 적합성 진단 결과 테이블 \n   2. 추천 Top 3 리스트 \n   3. 1순위 과제 및 선정 이유 \n   4. 가장 쉬운 솔루션과 실행 로직",
+                    desc: "막연한 질문을 '진단 템플릿'으로 전환, 사용자 데이터 입력 유도, 'Small Win' 중심 제안"
+                }
+            },
+            "교육 자료 개발": {
+                basic: {
+                    text: `"신입 직원을 위한 기본적인 교육 자료를 만들어주세요. 회사 소개와 업무 개요를 포함해주세요."`,
+                    desc: "기본 교육자료 작성"
+                },
+                intermediate: {
+                    text: `"신입 직원 2일차 교육 자료를 개발해주세요. 1일차는 회사 소개, 조직도, 기업문화이고 2일차는 업무 시스템과 주요 프로세스입니다. 각 섹션을 10분 분량으로 슬라이드 아웃라인 형식으로 구성하고 이해도 확인을 위한 퀴즈를 3개씩 포함해주세요."`,
+                    desc: "체계적 구성, 학습 설계"
+                },
+                advanced: {
+                    text: "📋 [페르소나] \n   10년 차 HRD 전문가 및 신규 입사자 온보딩 경험 설계 전문가 \n   정보 과부하 없이 심리적 안정감과 빠른 적응을 위한 Day 1 웰컴 키트 설계 전문가 \n\n📋 [문제] \n   신규 직원용 기본 교육 자료 제작 필요 \n   창립 연도, 조직도 등 사실 나열은 지루하고 실질적 답변 제공 못함 \n   신규 입사자가 오늘/이번 주 무엇을 해야 할지 모르는 불안감 \n\n📋 [맥락] \n   목표는 역사 교육이 아닌 빠른 적응과 심리적 안정감 \n   첫 주 생존에 필요한 가장 필수적 정보만 추려서 제공 \n   스스로 찾아볼 수 있는 구조로 최적의 온보딩 자료 설계 \n\n📋 [산출물] \n   사실 나열을 넘어 빠른 적응이라는 명확한 목표를 가진 \n   '신규 입사자 웰컴 키트 템플릿' 1부 \n\n📋 [작업절차] \n   (1) [최적 구조 설계]: \n       회사 소개와 업무 개요를 신규 입사자 관점에서 Day 1/Week 1 필수 섹션으로 재배치 \n   (2) [회사 소개 → 함께 일하는 법]: \n       연혁 대신 미션(한 문장), 도움 요청 채널, 커뮤니케이션 원칙 포함 \n   (3) [업무 개요 → 당신의 첫 30일]: \n       핵심 임무(한 문장), 주요 동료 1-3명, 첫 주 성공 목표(달성 가능한 것) 포함 \n   (4) [필수 FAQ]: \n       신규 입사자가 가장 궁금해할 필수 FAQ 3-5가지 포함 \n\n📋 [산출물 형식] \n   괄호 안 내용만 채우면 바로 공유 가능한 \n   친절하고 명확한 톤의 웰컴 키트 템플릿 마크다운 텍스트",
+                    desc: "신규 입사자 관점 재구성, '정보'가 아닌 '생존' 가이드, '첫 주'의 목표 명시"
+                }
+            },
+            "콘텐츠 기획": {
+                basic: {
+                    text: `"블로그나 SNS를 위한 콘텐츠 아이디어를 10개 제안해주세요. 우리 회사에 맞는 주제로 부탁합니다."`,
+                    desc: "기본 콘텐츠 아이디어"
+                },
+                intermediate: {
+                    text: `"30대 직장인을 타겟으로 한 블로그 콘텐츠 월간 기획을 세워주세요. 주제는 '업무 생산성 향상'이고, 하우투, 사례 분석, 전문가 인터뷰 등 다양한 콘텐츠 유형을 각각 3개씩 총 9개로 계획해주세요. SEO 키워드도 포함해주세요."`,
+                    desc: "타겟 명확, 체계적 계획"
+                },
+                advanced: {
+                    text: "📝 [페르소나] \n   10년 차 콘텐츠 마케팅 리드 \n   30대 직장인 타겟 업무 생산성 블로그 총괄 운영 및 진짜 문제 해결 콘텐츠 기획 전문가 \n\n📝 [문제] \n   30대 직장인 대상 업무 생산성 블로그 운영 필요하지만 주제 포화 상태 \n   뻔한 조언 배제하고 현실적 고충 해결하는 콘텐츠 기획 어려움 \n   하우투/사례 분석/인터뷰 유형별 구체적 주제와 SEO 연계 막막 \n\n📝 [맥락] \n   목표는 30대 직장인의 '내 얘기' 공감과 '당장 써먹을 수 있다' 신뢰 구축 \n   뻔한 조언 완전 배제하고 현실적 고충 해결하는 날카롭고 실용적 기획 \n   잦은 회의, 툴 과부하, 샌드위치 리더십 등 진짜 문제 중심 접근 \n\n📝 [산출물] \n   뻔한 조언 걸러내고 현실적 고충 해결에 초점 맞춘 \n   '업무 생산성 월간 콘텐츠 기획안 9개' 1부 \n\n📝 [작업절차] \n   (1) [하우투 3개]: \n       당장 써먹을 수 있는 실용적 팁 중심의 기사 기획 \n   (2) [사례 분석 3개]: \n       나와 비슷한 사람이나 유명 기업 실제 사례로 독자 이입 쉬운 기사 기획 \n   (3) [전문가 인터뷰 3개]: \n       권위와 최신 트렌드 담보하는 30대 직장인 궁금해할 전문가 섭외 컨셉 기획 \n   (4) [SEO 키워드]: \n       각 기획안마다 메인 키워드 1개, 서브 키워드 2-3개 포함하여 검색 트래픽 고려 \n\n📝 [산출물 형식] \n   3가지 유형별 3개 기획안 명확 구분 \n   제목(가안)/핵심 내용/메인 키워드/서브 키워드 포함 마크다운 텍스트",
+                    desc: "타겟 페인포인트 구체화, 뻔한 콘텐츠 배제, SEO 키워드 통합"
+                }
+            },
+            "아티클 및 콘텐츠 글쓰기": {
+                basic: {
+                    text: `"2024년 AI 트렌드에 대한 블로그 글을 1500자 분량으로 작성해주세요. 일반 독자가 이해하기 쉽게 작성해주세요."`,
+                    desc: "기본 아티클 작성"
+                },
+                intermediate: {
+                    text: `"'2024 AI 트렌드 5가지'라는 제목의 1500자 기사를 작성해주세요. 도입-각 트렌드 상세 설명-결론 순서로 구성하고, 전문적이지만 읽기 쉽게 작성해주세요. 각 트렌드마다 구체적인 데이터와 사례를 포함해주세요."`,
+                    desc: "구조화된 작성, 근거 기반"
+                },
+                advanced: {
+                    text: "📰 [페르소나] \n   15년 차 IT 전문 저널리스트 및 AI 산업 분석가 \n   기술 현상을 핵심 트렌드로 묶어내고 C-Level도 쉽게 읽을 수 있는 인사이트풀한 기사 작성 전문가 \n\n📰 [문제] \n   2024년 AI 트렌드 기사 작성 필요하지만 뻔한 단어 나열은 가치 없음 \n   멀티모달, 생성형 AI 등 모두 아는 용어로는 뒷북치는 기사 될 것 \n   비즈니스 리더와 기획자에게 실제 가치 주는 날카로운 분석 필요 \n\n📰 [맥락] \n   2024년 결산하고 2025년 전망하는 연말 특집 기사 핵심 콘텐츠 \n   'AI가 진짜로 바꾼 것'에 명쾌한 답 제공이 목표 \n   기술 소개가 아닌 비즈니스/사회 중요성을 데이터와 사례로 증명 \n\n📰 [산출물] \n   뻔한 단어 나열이 아닌 2024년 진짜 변화를 꿰뚫는 \n   'Top 5 AI 트렌드 분석 기사' 1편 (1500자) \n\n📰 [작업절차] \n   (1) [트렌드 선정]: \n       2024년 수많은 현상 중 가장 의미 있는 5가지를 전문가 시각으로 선정 \n       단순 기술이 아닌 현상 중심(예: 생성형 AI 현업 도입, AI 에이전트 부상) \n   (2) [기사 구조]: \n       도입부 - 각 트렌드 상세 설명 - 결론 구조 준수 \n   (3) [데이터 및 사례 필수]: \n       각 트렌드별 구체적 2024년 데이터/통계와 가장 상징적 사례 반드시 포함 \n   (4) [분량 및 톤]: \n       1500자 내외 매우 간결하지만 전문적 톤앤매너 유지 \n\n📰 [산출물 형식] \n   제목/도입부/트렌드 1-5/결론 구조의 \n   완성된 기사 텍스트",
+                    desc: "데이터 기반 증거 요구, '현상' 중심 분석, 전문가적 통찰력 부여"
+                }
+            },
+            "엑셀 등 BI 툴 활용방안 질문": {
+                basic: {
+                    text: `"엑셀을 활용해서 매출 데이터를 분석하고 시각화하는 방법을 알려주세요."`,
+                    desc: "기본 데이터 분석 요청"
+                },
+                intermediate: {
+                    text: `"엑셀 피벗 테이블을 사용해서 월별 매출 데이터를 분석하는 방법을 알려주세요. 데이터는 제품별, 지역별 매출이고 월별 트렌드와 Top 성과 제품을 파악하고 싶습니다. 그래프 차트도 생성하는 방법을 단계별로 상세히 설명해주세요."`,
+                    desc: "구체적 분석, 단계별 가이드"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   15년 경력 엑셀 MVP 및 데이터 분석 전문 강사 \n   초보자도 5분 내 피벗 테이블로 경영진 보고용 차트 만들게 하는 단계별 설명 전문가 \n\n📊 [문제] \n   제품별/지역별 월별 매출 데이터 원본을 숫자 덩어리로만 인식 \n   월별 트렌드나 Top 성과 제품을 한눈에 파악 불가 \n   수동 필터링과 합계로 시간 낭비, 그래프 차트 제작 방법 모름 \n\n📊 [맥락] \n   팀 월간 회의용 핵심 자료로 활용 예정 \n   피벗 테이블 활용하여 데이터 분석 전문가처럼 보이게 만들기 \n   월별 트렌드와 Top 성과 제품 파악부터 시각화까지 A-Z 완료 \n\n📊 [산출물] \n   엑셀 초보자도 그대로 따라하면 5분 내 분석과 피벗 차트까지 완성하는 \n   '매우 상세하고 친절한 단계별 가이드' 1부 \n\n📊 [작업절차] \n   (1) [데이터 준비 및 피벗 테이블 삽입]: \n       원본 데이터를 표 형식으로 만들고 삽입 > 피벗 테이블 클릭하는 첫 단계부터 설명 \n   (2) [월별 트렌드 분석]: \n       피벗 테이블 필드에서 날짜/매출액을 행/값 영역으로 드래그, 월별 자동 그룹화 방법 \n   (3) [Top 성과 제품 분석]: \n       필드 초기화 방법부터 제품/매출액 드래그, 내림차순 정렬 및 Top 5-10 필터링 고급 기술 \n   (4) [그래프 차트 생성]: \n       분석 결과를 피벗 차트로 만드는 클릭 단위 설명, 적합한 차트 유형과 이유 제안 \n\n📊 [산출물 형식] \n   엑셀 화면 따라하기 가능한 각 단계 명확 구분 \n   클릭 버튼과 드래그 필드명 볼드/괄호 강조된 상세하고 친절한 단계별 가이드 마크다운",
+                    desc: "초보자 중심의 단계별(Step-by-step) 설명, 명확한 2가지 분석 목표 제시, 차트 유형과 '이유' 제안"
+                }
+            },
+            "홍보 문구 작성": {
+                basic: {
+                    text: `"신제품 출시를 위한 SNS 홍보 문구를 작성해주세요. 제품의 주요 장점을 어필할 수 있도록 작성해주세요."`,
+                    desc: "기본 홍보 카피"
+                },
+                intermediate: {
+                    text: `"2030 직장인을 타겟으로 한 신제품 론칭 카피를 작성해주세요. 핵심 메시지는 '시간 절약과 간편함'이고, 인스타그램 광고용으로 50자 이내로 작성해주세요. 관련 해시태그 5개도 제안해주세요."`,
+                    desc: "타겟 명확, 채널 최적화"
+                },
+                advanced: {
+                    text: "📱 [페르소나] \n   10년 차 소셜 카피라이터 \n   2030 직장인 타겟 인스타그램 광고 전문가, 이성적 소구가 아닌 감성적 혜택으로 스크롤을 멈추게 하는 전문가 \n\n📱 [문제] \n   2030 직장인 타겟 신제품 론칭하지만 '시간 절약'이라는 단어는 무시됨 \n   광고에 면역된 이들의 페인 포인트를 건드리는 날카로운 한마디 필요 \n   50자 이내로 스크롤을 멈추게 할 Hook 제작 어려움 \n\n📱 [맥락] \n   인스타그램 광고 첫 줄에 사용될 핵심 카피 \n   50자 안에 문제와 혜택이 동시에 느껴지도록 열정적이고 설득력 있게 작성 \n   끝없는 야근, 반복 업무, 번아웃 등 진짜 페인 포인트 자극 필요 \n\n📱 [산출물] \n   시간 절약과 간편함을 2030 직장인 언어로 재해석한 \n   '스크롤을 멈추게 하는' 50자 이내 인스타그램 카피 3-5가지와 해시태그 5개 \n\n📱 [작업절차] \n   (1) [혜택으로의 번역]: \n       '시간 절약', '간편함' 단어 절대 직접 사용 금지, 칼퇴/저녁이 있는 삶/멍 때릴 시간 등 궁극적 혜택으로 표현 \n   (2) [페인 포인트 자극]: \n       반복 업무, 야근 등 페인 포인트 먼저 건드리고 해결책 제시하는 대조 형식 카피 1개 이상 포함 \n   (3) [카피 3-5개 생성]: \n       위 원칙에 따라 50자 이내 카피 3-5개 생성 \n   (4) [해시태그 5개]: \n       #직장인 필수 포함, 실제 사용률 높은 관련 해시태그 5개 제안 \n\n📱 [산출물 형식] \n   1. 광고 카피 3-5개 (각 50자 이내) \n   2. 추천 해시태그 5개",
+                    desc: "기능어 금지(시간 절약), 특징을 감성 혜택으로 번역, 플랫폼 맥락(스크롤 스토핑)"
+                }
+            },
+            "업무 계획 수립": {
+                basic: {
+                    text: `"다음 분기 팀 업무 계획을 수립해주세요. 주요 목표와 계획들을 정리해주세요."`,
+                    desc: "기본 업무계획 수립"
+                },
+                intermediate: {
+                    text: `"Q2 팀 업무 계획을 수립해주세요.
+목표는 신규 고객 50개 확보이고, 주요 과제 5개를 선정해주세요.
+
+각 과제별 담당자와 일정,
+예상 리스크와 대응방안,
+월별 마일스톤을 포함해주세요."`,
+                    desc: "목표 명확, 체계적 계획"
+                },
+                advanced: {
+                    text: `"[페르소나]
+당신은 15년 경력의 'PMO(Project Management Officer) 리더'이자 '그로스 전략가(Growth Strategist)'입니다.
+당신의 유일한 임무는 [신규 고객 50개 확보]라는 '비즈니스 목표(Goal)'를,
+Q2(90일) 동안 팀원 모두가 명확하게 실행하고 추적할 수 있는 '구체적인 액션 플랜(Action Plan)'으로 역산(Reverse-engineer)하는 것입니다.
+
+[문제]
+저는 [Q2 팀 업무 계획]을 수립해야 하며, [신규 고객 50개 확보]라는 명확한 '최종 목표(KPI)'를 받았습니다.
+하지만 이 '목표'를 '어떤 과제'로 쪼개야 가장 효율적인지,
+각 과제에 어떤 '리스크'가 숨어있는지,
+'월별'로 무엇을 달성해야 50개를 채울 수 있는지, '논리적인 청사진'이 없습니다.
+
+[맥락]
+이 계획은 Q2(4월~6월) 90일 동안 우리 팀 전체가 따라야 할 '단 하나의 진실(Single Source of Truth)'이 될 것입니다.
+따라서 단순한 '과제 리스트'가 아니라,
+(1) 목표 달성을 위한 [주요 과제 5개]가 논리적으로 도출되어야 하고,
+(2) 모든 팀원이 자신의 '담당'과 '일정'을 알아야 하며,
+(3) [월별 마일스톤]을 통해 우리가 목표에 맞게 가고 있는지 추적할 수 있어야 합니다.
+
+[산출물]
+[신규 고객 50개 확보]라는 '최종 목표'를 달성하기 위한,
+'Q2(90일) 팀 업무 실행 계획서' 1부.
+
+[작업절차]
+(1) [주요 과제 5개 도출]:
+    [신규 고객 50개 확보]라는 목표를 달성하기 위해,
+    '당신의 전문가적 관점'에서 가장 효과적인 [주요 과제 5개]를 먼저 제안(도출)해주세요.
+    (예: '신규 인바운드 채널 구축', '핵심 타겟 대상 아웃바운드 캠페인' 등)
+
+(2) [상세 계획 수립]:
+    당신이 제안한 5개 과제 각각에 대해,
+    [담당자(예: 마케팅 리드)], [일정(예: 4/1~6/30)],
+    [월별 마일스톤(4월/5월/6월 말 달성 목표)], [예상 리스크],
+    그리고 [리스크 대응 방안]을 모두 포함하여 상세 계획을 수립해주세요.
+
+[산출물 형식]
+우리 팀 노션(Notion)이나 위키(Wiki)에 바로 게시할 수 있도록,
+(1) [Q2 종합 목표]와 (2) [주요 과제 5개 상세 계획표 (테이블 형식 강력 추천)]가 명확히 구분된 '전문적인 기획 문서' (마크다운 텍스트)."`,
+                    desc: "목표 기반 역산, 핵심 과제 도출 요구, 위험 관리 및 마일스톤 포함"
+                }
+            },
+            "리서치 계획수립": {
+                basic: {
+                    text: `"우리 서비스에 대한 고객 만족도 조사 계획을 세워주세요. 어떤 방법으로 언제, 누구를 대상으로 조사하면 좋을지 알려주세요."`,
+                    desc: "기본적인 조사 계획 요청"
+                },
+                intermediate: {
+                    text: `"신기능 출시 전 사용성 테스트 리서치를 계획해주세요. 목적은 사용자의 불편사항과 개선점 파악이고, 기존 사용자 30명을 대상으로 2주 안에 완료하려고 합니다. 예산은 200만원이며 사용자 인터뷰와 설문조사를 병행하고 싶습니다. 단계별 진행 방법과 일정을 제시해주세요."`,
+                    desc: "구체적 목표와 방법론 제시"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   10년 차 UX 리서치 리드 및 리서치 오퍼레이션 전문가 \n   압축된 일정과 제한된 예산 하에서 치명적 불편사항을 찾는 효율적 리서치 스프린트 설계 전문가 \n\n📊 [문제] \n   신기능 출시 전 사용성 테스트 필요하지만 2주/30명/200만원/인터뷰+설문 제약 존재 \n   리쿠르팅, 실행, 분석, 보고까지 2주 안에 끝낼 운영 계획 부재 \n   현실적 제약 하에서 효과적 리서치 스프린트 설계 어려움 \n\n📊 [맥락] \n   학술적이 아닌 실행 중심 리서치 플랜 필요 \n   인터뷰 5-8명(깊이), 설문조사 22-25명(넓이)의 혼합 방식이 현실적 \n   200만원 예산 대부분 참가자 인센티브로 사용 \n\n📊 [산출물] \n   2주 안에 치명적 개선점 도출하고 출시 결정을 지원하는 \n   '신기능 사용성 테스트 2주 스프린트 계획표' 1부 \n\n📊 [작업절차] \n   (1) [계획 및 리쿠르팅 Day 1-4]: \n       리서치 목표 확정, 인터뷰/설문 대상자 선별, 테스트 스크립트 확정, 예산 집행 계획 \n   (2) [테스트 실행 Day 5-9]: \n       5-8명과 1:1 원격 인터뷰 집중 실행, 22-25명 대상 설문조사 링크 발송으로 정량/정성 데이터 수집 \n   (3) [분석 및 보고 Day 10-14]: \n       치명적 불편사항과 정성적 피드백 분석, 설문 데이터로 정량적 검증, Top 5 개선점 우선순위화한 실행 중심 요약 보고서 작성 \n\n📊 [산출물 형식] \n   2주(Working Day 10일) 일정이 한눈에 보이는 \n   단계별 상세 일정표 마크다운 테이블 형식",
+                    desc: "현실적 제약(2주 30명) 반영, 혼합 방식(Mixed Method) 설계, 실행 중심(Actionable) 보고"
+                }
+            },
+            "PR 자료 작성": {
+                basic: {
+                    text: `"우리 회사 신제품 출시에 대한 보도자료를 작성해주세요. 제품의 주요 기능과 출시 일정, 가격 정보를 포함해서 언론사에 배포할 수 있는 형태로 작성해주세요."`,
+                    desc: "기본적인 보도자료 작성"
+                },
+                intermediate: {
+                    text: `"혁신적인 AI 기반 마케팅 자동화 솔루션 출시 보도자료를 작성해주세요. 포함할 내용: 제품의 핵심 기능 3가지와 기존 제품 대비 차별점, 타겟 고객층과 시장 규모, 3월 15일 정식 출시 및 가격 정책, 대표이사 코멘트. 기자들이 관심을 가질 만한 뉴스 앵글을 찾아서 헤드라인부터 매력적으로 구성해주세요."`,
+                    desc: "구조화된 내용, 뉴스 가치 강조"
+                },
+                advanced: {
+                    text: "📰 [페르소나] \n   15년 경력 B2B 테크 전문 PR 에이전시 PR 디렉터 \n   기능 나열이 아닌 테크 전문 기자들이 기사로 쓰고 싶게 만드는 매력적 뉴스 앵글 창조 전문가 \n\n📰 [문제] \n   AI 마케팅 솔루션 출시 관련 팩트들은 있지만 날카로운 앵글 부재 \n   팩트만 나열하면 수백 개 AI 보도자료 받는 기자들에게 100% 무시됨 \n   왜 지금 뉴스거리인지, 기존 시장을 어떻게 파괴하는지 논거 없음 \n\n📰 [맥락] \n   목적은 제품 홍보가 아닌 기사화 \n   기자들의 의심을 호기심으로 바꿔야 함 \n   새로운 시장의 개막으로 인식하게 하는 강력한 논거 제공 필요 \n\n📰 [산출물] \n   핵심 기능을 기자들의 언어로 재해석하고 매력적인 뉴스 앵글이 살아있는 \n   'AI 마케팅 솔루션 출시 전략 보도자료' 1부 \n\n📰 [작업절차] \n   (1) [뉴스 앵글 및 헤드라인]: \n       기자들 관심 가질 가장 강력한 뉴스 앵글 1개 정의, 이를 기반으로 매력적 헤드라인과 서브 헤드라인 작성 \n   (2) [본문 스토리 구성]: \n       핵심 기능을 고객 가치로 번역, 차별점을 기존 시장 한계 vs 유일한 해결책으로 대비, 타겟/시장 규모를 기회로 제시 \n   (3) [대표이사 코멘트]: \n       뻔한 코멘트 대신 마케팅 시장 룰을 어떻게 바꿀지에 대한 선언적이고 비전 담긴 코멘트 작성 \n   (4) [출시 정보 명시]: \n       3월 15일 정식 출시와 가격 정책을 명확하게 포함 \n\n📰 [산출물 형식] \n   즉시 배포 가능한 표준 보도자료 양식 \n   헤드라인/서브 헤드라인/본문/대표 코멘트/회사 소개/연락처 완성형 기사 텍스트 마크다운",
+                    desc: "'광고'가 아닌 '뉴스 앵글' 창조, '기능'을 '가치'로 번역, '비전' 중심의 CEO 코멘트"
+                }
+            },
+            "KPI 대시보드 설계": {
+                basic: {
+                    text: `"우리 마케팅 팀의 성과를 한눈에 볼 수 있는 KPI 대시보드를 설계해주세요. 주요 지표들과 어떻게 시각화할지 제안해주세요."`,
+                    desc: "기본적인 대시보드 설계 요청"
+                },
+                intermediate: {
+                    text: `"영업팀 KPI 대시보드를 설계해주세요. 추적할 지표는 월간 매출, 리드 전환율, 영업 파이프라인 현황, 고객 만족도입니다. 각 지표별로 적합한 차트 유형을 제안하고, 일일 업데이트와 주간 리포트 기능을 포함해주세요. 목표 대비 90% 이하 달성 시 알림이 가도록 설계하고, 임원진과 실무진이 각각 필요한 정보를 쉽게 파악할 수 있도록 구성해주세요."`,
+                    desc: "핵심 지표 선정, 시각화 방법 제시"
+                },
+                advanced: {
+                    text: "📊 [페르소나] \n   15년 차 비즈니스 인텔리전스 컨설턴트 및 데이터 시각화 전문가 \n   흩어진 마케팅 데이터를 단일 대시보드로 통합하여 5분 내 성과와 병목 지점 파악 및 다음 액션 결정 지원 전문가 \n\n📊 [문제] \n   마케팅 팀 성과를 한눈에 보고 싶지만 구글 애널리틱스, 광고 대시보드, CRM 데이터 모두 흩어져 있음 \n   이번 달 성과와 문제 채널 파악에 너무 많은 시간 낭비 \n   팀의 현재 위치 확인과 데이터 기반 의사결정 어려움 \n\n📊 [맥락] \n   단순 결과 보고용이 아닌 팀의 조종석 역할하는 대시보드 필요 \n   팀원 모두가 매일 아침 현재 위치 확인하고 데이터 기반 의사결정 가능하게 만들기 \n   가장 필요한 핵심 지표와 가장 직관적 시각화 방법 제안 필요 \n\n📊 [산출물] \n   마케팅 팀 핵심 목표를 한눈에 모니터링하고 다음 액션 도출 가능하도록 설계된 \n   '마케팅 KPI 대시보드 설계도' 1부 \n\n📊 [작업절차] \n   (1) [핵심 KPI 선정]: \n       마케팅 퍼널 기준 3가지 카테고리 분류 - 유입/인지(UV, Source), 활성화/리드(MQL, CVR, CPL), 전환/매출(매출, ROAS, CAC) \n   (2) [대시보드 레이아웃]: \n       의사결정 흐름에 따른 3단 구성 - 1단(종합 현황 숫자), 2단(핵심 트렌드 차트), 3단(상세 분석) \n   (3) [시각화 방안]: \n       각 지표 의미를 가장 잘 전달하는 구체적 시각화 방법 제안(꺾은선형, 가로 막대형, 깔때기형 등) \n\n📊 [산출물 형식] \n   1. 마케팅 퍼널 기반 핵심 KPI 선정안 (카테고리별) \n   2. 대시보드 3단 레이아웃 구성 제안 \n   3. 주요 지표별 최적 시각화 방안 (테이블 형식)",
+                    desc: "퍼널 기반 KPI 설계, 의사결정 중심 레이아웃, 차트 유형과 '이유' 제안"
+                }
+            },
+            "예산 계획 수립": {
+                basic: {
+                    text: `"다음 분기 우리 부서 예산 계획을 수립해주세요. 주요 비용 항목들과 예상 금액을 정리해서 제안해주세요."`,
+                    desc: "기본적인 예산 계획 요청"
+                },
+                intermediate: {
+                    text: `"마케팅 부서 연간 예산 계획을 수립해주세요.
+
+주요 카테고리는 온라인 광고, 오프라인 이벤트, 콘텐츠 제작, 마케팅 도구 구독료입니다.
+월별 예산 배분과 전년 대비 증감 사유를 명시하고,
+예비비 10%를 포함해서 각 항목별 ROI 예상치도 제시해주세요.
+총 예산 한도는 5억원입니다."`,
+                    desc: "구조화된 계획, 근거 제시"
+                },
+                advanced: {
+                    text: `"[페르소나]
+당신은 15년 경력의 'FP&A (재무 기획 및 분석)' 전문가이자, 우리 부서의 'Finance Business Partner(FBP)'입니다.
+당신의 유일한 임무는 나의 [다음 분기 목표]를 달성하기 위한 '논리적이고 방어 가능한(Defensible)' 예산 계획안을 설계하는 것입니다.
+
+[문제]
+저는 [다음 분기 예산 계획]을 수립해야 합니다.
+하지만 [아래 제공할 항목들]을 '단순 지출 목록'처럼 나열하면, 재무팀의 '이걸 왜 써야 하죠?'라는 공격을 방어할 수 없습니다.
+단순한 '비용(Cost)' 나열이 아닌, '전략적 투자(Investment)'로서의 예산안이 필요합니다.
+
+[맥락]
+이 예산안은 [다음 분기 우리 부서의 핵심 목표, 예: '신규 리드 2배 확보' 또는 '신규 프로젝트 X 런칭']를 달성하기 위한 '실행 계획'입니다.
+따라서 모든 항목은 '왜 이 돈을 써야 하는지(Justification)'가 명확해야 합니다.
+재무팀을 설득하는 것이 유일한 목표입니다.
+
+[산출물]
+[다음 분기 핵심 목표]와 '모든 지출 항목'이 1:1로 연결된,
+'전략적이고 방어 가능한 다음 분기 예산 계획 제안서' 1부.
+
+[작업절차]
+(1) [비용의 2가지 분류]:
+    [아래 입력된 비용 항목]을 '전문가인 당신의 판단'에 따라
+    (a) 'Run the Business (운영비/고정비)'와 (b) 'Change the Business (전략비/투자비)' 2가지로 재분류해주세요.
+
+(2) [전략비 정당화 (중요)]:
+    (b) '전략비/투자비'에 해당하는 모든 항목에 대해,
+    이것이 [다음 분기 핵심 목표] 달성에 '어떻게' 기여하는지 '명확한 정당성(Justification)'을 1~2줄로 추가해주세요.
+
+(3) [예상 리스크 및 우선순위]:
+    만약 예산이 삭감될 경우를 대비해, (b) '전략비' 항목들에 대해 '우선순위(High/Med/Low)'를 부여하고,
+    'High' 항목이 삭감될 경우의 '예상 리스크'를 함께 제시해주세요.
+
+[산출물 형식]
+재무팀장에게 바로 제출할 수 있는, 전문적인 톤의 '예산 계획안' (마크다운).
+1. [다음 분기 핵심 목표 및 총괄 요약]
+2. [예산 상세 내역 (테이블 형식)]: (분류(운영비/전략비), 항목명, 예상 금액, 정당성, 우선순위, 리스크)
+
+---
+[여기에 나의 예산안 초안을 입력합니다]
+* 1. 다음 분기 핵심 목표: [예: 신규 고객 50개 확보 및 신규 프로젝트 A 런칭]
+* 2. 주요 비용 항목 및 예상 금액 (초안):
+  - 인건비 (기존 인력): [금액]
+  - 신규 채용 (1명): [금액]
+  - A 프로젝트 외주 개발비: [금액]
+  - 신규 고객 확보 마케팅 캠페인: [금액]
+  - 기존 SaaS 구독료 (세일즈포스, 슬랙 등): [금액]
+  - 신규 툴 도입 (OOO): [금액]
+  - 교육 훈련비: [금액]
+  - 기타 운영비: [금액]"`,
+                    desc: "'비용'을 '전략적 투자'로 재구성, '지출'과 '목표'의 1:1 연결, '삭감 대비' 우선순위 및 리스크 관리"
+                }
+            },
+            "계약서 검토": {
+                basic: {
+                    text: `"첨부된 계약서를 검토해주세요. 주요 조건들과 주의해야 할 부분이 있는지 확인해주세요."`,
+                    desc: "기본적인 계약서 검토"
+                },
+                intermediate: {
+                    text: `"공급업체와의 서비스 계약서를 검토해주세요.
+
+중점적으로 확인할 항목:
+계약 기간과 금액, 각 당사자의 의무 사항, 위약금 및 해지 조건, 분쟁 발생 시 해결 방법.
+
+우리에게 불리할 수 있는 리스크 포인트 5가지를 찾아주시고,
+각각에 대한 수정 제안도 함께 제시해주세요."`,
+                    desc: "체계적 검토, 리스크 식별 및 대안 제시"
+                },
+                advanced: {
+                    text: `"[페르소나]
+당신은 10년 차 '사업기획팀' 또는 '운영팀'의 시니어 매니저입니다.
+당신은 변호사는 아니지만, 수십 건의 계약을 처리하며 '실무'에 독이 되는 '애매한 문구'나 '불합리한 조항'을 찾아내어,
+나중에 '일이 터지는 것'을 선제적으로 방지하는 '현실 감각'이 가장 뛰어난 계약 검토 전문가입니다.
+
+[문제]
+저는 [아래 첨부된 계약서]를 받았습니다.
+법률적으로 복잡한 건 둘째치고, 이 계약서의 '애매한 표현'들 때문에 나중에 '업무 범위(Scope)'가 멋대로 늘어나거나,
+'대금 지급'이 늦어지거나, '책임'을 부당하게 떠안게 될까 봐 '실무자로서' 불안합니다.
+
+[맥락]
+이 계약은 '서명' 자체가 목적이 아니라, '실행'이 목적입니다.
+따라서 이 검토의 유일한 목표는 '법적 승리'가 아니라, '일하는 동안 발목 잡히지 않도록' 하는 것입니다.
+'이대로 진행해도 실무에 문제가 없는지', '우리가 부당하게 손해 보는 조항은 없는지'를 '실무자의 언어'로 명확하게 확인하는 것이 핵심입니다.
+
+[산출물]
+제가 '안심하고 일을 시작'하거나, '서명 전 반드시 짚고 넘어갈' 협상 포인트를 알 수 있도록,
+'실무자 관점의 계약서 검토 체크리스트 및 수정 의견' 1부.
+
+[작업절차]
+(1) [핵심 조건 확인 (Checklist)]:
+    제가 합의한 내용과 일치하는지 바로 확인할 수 있도록, '핵심 조건' 5가지를 명확히 요약해주세요.
+    (a) [계약 기간]:
+    (b) [계약 금액 및 지급 방식/시기]:
+    (c) [우리의 명확한 업무 범위(Scope of Work)]:
+    (d) [최종 산출물 및 귀속(IP)]:
+    (e) [계약 해지 조건]:
+
+(2) [실무상 위험 조항(Red Flags) 식별]:
+    실무자로서 '나중에 반드시 문제 되는' 불리한 조항 3가지를 최우선으로 찾아주세요.
+    (a) [대금 지급 지연/거절 조항]:
+        상대방이 '사소한 이유'로 대금 지급을 미루거나 거절할 수 있는 독소 조항은 없는지?
+    (b) [업무 범위/수정의 모호함]:
+        '기타 상호 협의' 같은 애매한 말로, '무제한 수정'이나 '추가 업무'를 무상으로 요구할 수 있는 조항은 없는지?
+    (c) [과도한 책임/손해배상]:
+        '을'이라는 이유로, 우리가 감당하기 힘든 '과도한 책임'이나 '손해배상 한도(Limit)'가 불리하게 잡혀있지는 않은지?
+
+(3) [협상 및 수정 제안]:
+    위 (2)에서 식별된 '위험 조항' 각각에 대해, '왜' 위험한지 '쉬운 언어'로 설명하고,
+    실무 협상 테이블에서 우리가 요구해야 할 '현실적인 수정안' 또는 '확인용 질문'을 구체적으로 제시해주세요.
+
+[산출물 형식]
+1. [핵심 조건 5가지 체크리스트]
+2. [실무상 위험 조항 Top 3 및 수정 제안]: (조항 번호, 문제점 요약, 실무자 수정/질문 제안)
+
+---
+[여기에 계약서 원본 텍스트를 입력합니다]"`,
+                    desc: "실무자 관점 재구성, '법률'이 아닌 '업무 범위'와 '대금 지급', '현실적 협상안' 제시"
+                }
+            },
+            "정책 문서 작성": {
+                basic: {
+                    text: `"고객 데이터 보안 정책 문서를 작성해주세요. 기본적인 규칙과 절차, 주의사항을 포함해서 작성해주세요."`,
+                    desc: "기본적인 정책 문서 작성"
+                },
+                intermediate: {
+                    text: `"고객 데이터 보안 정책을 작성해주세요. 주요 내용: 데이터 수집과 저장 기준, 접근 권한 관리 절차, 데이터 암호화 요구사항, 위반 시 대응 체계, 정기 점검 방법. 정책 시행일과 담당 부서 연락처도 포함하고, 직원들이 쉽게 이해할 수 있도록 명확하게 작성해주세요."`,
+                    desc: "명확한 규칙과 절차 제시"
+                },
+                advanced: {
+                    text: `[페르소나] 당신은 15년 경력의 '데이터 보호 책임자(DPO)'이자 '정보 보안 정책(ISMS, PIPA)' 수립 전문가입니다. 당신의 유일한 임무는, 복잡한 [개인정보보호법]을 '비(非) 법률가'인 일반 직원들이 '즉시 이해하고 절대 실수하지 않도록' 만드는, 명확하고 '실용적인(Actionable)' 정책 문서를 설계하는 것입니다. [문제] 저는 [고객 데이터]를 다루는 부서의 관리자입니다. 하지만 '누가', '언제', '어떻게' 고객 데이터에 접근하고 '어떻게' 폐기해야 하는지에 대한 '명확한 전사 기준'이 없습니다. 이로 인해 직원의 '실수' 하나가 '치명적인 개인정보 유출 사고'로 이어져, '수십억 원의 과징금'과 '고객 신뢰 상실'이라는 '비즈니스 붕괴' 위험에 그대로 노출되어 있습니다. [맥락] 이 정책의 유일한 목표는 '법적 준수(Compliance)'를 넘어, '직원의 실수를 원천 차단'하는 것입니다. '복잡한 법률 용어'의 나열이 아니라, 마케팅, CS, 개발 등 모든 직원이 '이것만은 지켜야 한다'고 '즉시 이해하고 실행'할 수 있는 '실용적인 가이드'가 필요합니다. [산출물] '법적 책임'은 물론 '고객의 신뢰'까지 완벽하게 보호할 수 있는, '고객 데이터 보안 정책 및 필수 실행 가이드라인' 1부. [작업절차] (1) [핵심 원칙 (Basic Rules)]: (a)최소 수집의 원칙, (b)목적 기반 사용, (c)알고보니(Need-to-know) 기반의 접근 제어 등, 모든 직원이 알아야 할 '기본 원칙 5가지'를 먼저 정의해주세요. (2) [데이터 생명주기별 절차 (Procedures)]: '절차'를 '데이터의 생명주기'에 따라 4단계로 명확히 구분하여 설계해주세요. (a) [수집 시]: (b) [저장 및 접근 시]: (c) [이용 및 제공(제3자) 시]: (d) [폐기 시]: (3) ["절대 금지" 주의사항 (Precautions / Don'ts)]: 직원들이 '가장 실수하기 쉬운' 치명적인 행동들을 '절대 금지(Don'ts)' 목록으로 5가지 이상 명확하게 제시해주세요. (예: "고객 데이터를 개인 이메일/메신저로 절대 전송 금지", "인가되지 않은 USB/노트북에 절대 다운로드 금지" 등) (4) [사고 발생 시 절차 (Incident Response)]: '만약 유출/침해 사고가 의심될 경우', 직원이 '즉시' 수행해야 할 '1-2-3 비상 절차' (예: 1. 즉시 OOO팀에 신고, 2. ...)를 포함해주세요. [산출물 형식] 전사 '보안 규정'으로 즉시 게시할 수 있도록, 위 (1)~(4)의 섹션이 명확히 구분되고, '누가, 무엇을, 어떻게' 해야 하는지 명시된 '공식 정책 문서' (마크다운 텍스트)."`,
+                    desc: "법적 비즈니스 리스크 정의, '데이터 생명주기' 기반 설계, '금지' 및 '사고 대응' 명시"
+                }
+            },
+            "다국어 번역 및 현지화": {
+                basic: {
+                    text: `"첨부된 제품 소개 문서를 영어로 번역해주세요. 해외 고객이 이해하기 쉽도록 자연스럽게 번역해주세요."`,
+                    desc: "기본적인 번역 요청"
+                },
+                intermediate: {
+                    text: `"우리 제품 마케팅 자료를 북미 시장용으로 영어 번역해주세요.
+
+톤은 프로페셔널하면서도 신뢰감 있게 작성하고,
+한국 특유의 표현이나 문화적 맥락은 현지 상황에 맞게 현지화해주세요.
+기술 용어는 해당 업계의 표준 용어를 사용하고,
+현지 고객들이 친숙하게 느낄 수 있도록 적절한 예시나 사례로 교체해주세요."`,
+                    desc: "타겟 시장 고려, 문화적 현지화"
+                },
+                advanced: {
+                    text: `"[페르소나]
+당신은 15년 경력의 '북미 시장 전문 B2B 마케팅 컨설턴트'이자 '현지화(Localization) 및 트랜스크리에이션(Transcreation) 전문가'입니다.
+당신의 유일한 임무는 [아래 첨부할 한국어 원본]의 '의미'는 살리되, '표현'은 100% 북미 현지인의 것으로 바꾸어,
+마치 그들의 언어로 처음부터 쓰인 것처럼 만드는 것입니다.
+
+[문제]
+저는 [아래 첨부할 한국어 마케팅 자료]를 가지고 있습니다.
+하지만 이 자료를 '문자 그대로(1:1)' 영어로 번역하면, [북미 시장] 고객들은 '어색함(Konglish)'과 '문화적 이질감'을 즉시 느낄 것입니다.
+[한국 특유의 표현]이나 '우리가 최고'라는 식의 접근은 [북미 시장]에서 신뢰를 얻기는커녕, '아마추어'처럼 보이게 만들 위험이 큽니다.
+
+[맥락]
+이 번역의 유일한 목적은 '번역'이 아니라 '설득'입니다.
+[북미 고객]이 이 자료를 읽었을 때, [신뢰감(Trustworthy)]과 [전문성(Professional)]을 느끼고 '우리 제품을 써봐야겠다'고 결심하게 만들어야 합니다.
+따라서 [기술 용어]는 [해당 업계의 북미 표준 용어]로 완벽히 대체되어야 하며,
+[한국식 예시]는 [그들이 공감할 수 있는 현지 사례]로 전면 교체되어야 합니다.
+
+[산출물]
+[한국어 원본]을 기반으로, 북미 시장의 정서와 비즈니스 문법에 완벽하게 '현지화(Localized)'된 '영어 마케팅 자료' 1부.
+
+[작업절차]
+(1) [톤앤매너 설정]:
+    요청한 '전문적이고 신뢰감 있는(Professional & Trustworthy)' 톤을 기본으로 설정합니다.
+
+(2) [문화적 현지화 (Localization)]:
+    [한국 특유의 표현]이나 '우리끼리만 아는' 맥락을 '즉시' 식별하고,
+    이를 '북미 비즈니스' 정서에 맞는 중립적이고 명확한 표현으로 '의역(Transcreation)'합니다.
+
+(3) [전문 용어 현지화]:
+    [기술 용어]를 검토하여, 만약 한국에서만 쓰이는 용어(Konglish tech term)라면,
+    즉시 [해당 업계의 북미 표준 용어]로 수정합니다.
+
+(4) [사례 및 예시 교체]:
+    원본의 [한국식 예시/사례]가 북미 고객에게 공감을 주기 어렵다고 판단되면,
+    '의미는 동일'하지만 '더 친숙한 북미의 예시/사례'로 과감하게 교체하여 제안합니다.
+
+(5) [최종 검토]:
+    완성된 영어 텍스트에 어색한 한국어 직역투가 남아있지 않은지,
+    'Native'의 관점에서 최종 검토합니다.
+
+[산출물 형식]
+[한국어 원본]과 [현지화된 영어 번역본]을 '1:1 문단 대조' 형식으로 제공하여,
+제가 '어떤 부분이 어떻게' 바뀌었는지 명확하게 비교/학습할 수 있도록 해주세요.
+(만약 '과감한 교체'가 일어난 부분이 있다면, 그 [이유]를 간단한 코멘트로 덧붙여주세요.)
+
+---
+[여기에 번역할 한국어 마케팅 자료 원본을 입력합니다]"`,
+                    desc: "'번역'이 아닌 '현지화' 요구, 문화적 맥락 교체, '의역 이유' 코멘트 요구"
+                }
+            },
+            "기술 문서 작성": {
+                basic: {
+                    text: "우리 제품의 API 사용법에 대한 개발자 문서를 작성해주세요. 기본적인 사용 방법과 주요 기능들을 포함해주세요.",
+                    desc: "기본적인 기술 문서 작성"
+                },
+                intermediate: {
+                    text: "REST API 개발자 문서를 작성해주세요. 각 엔드포인트별로 URL, HTTP 메서드, 필수/선택 파라미터, 응답 형식을 명시하고, API 키 기반 인증 방법과 주요 에러 코드 설명을 포함해주세요.",
+                    desc: "구조화된 문서, 실용적 예시 포함"
+                },
+                advanced: {
+                    text: "🔹 [페르소나] \n   10년 차 Tech Writer/Developer Advocate \n   'Time-to-First-Call'을 5분 내로 단축하는 '셀프 서비스' API 문서 설계 전문가 \n\n🔹 [문제] \n   API 문서를 작성해야 함 \n   '인증/예제 코드/오류 코드'가 불명확하면 개발자가 이탈하고 서포트 티켓이 폭주함 \n\n🔹 [맥락] \n   목표는 '개발자 성공'과 '마찰 없는 연동'임 \n   단순 설명서가 아닌, 개발자의 '성공 여정 가이드'가 필요함 \n\n🔹 [산출물] \n   개발자가 5분 내 첫 호출을 성공하고 스스로 문제를 해결할 수 있는, \n   '개발자 중심 API 가이드라인 템플릿' 1부 \n   (AI가 템플릿을 설계하면, 사용자가 내용을 채움) \n\n🔹 [작업절차] \n   (1) [이상적 구조 제안]: \n       Overview / Authentication / Quickstart / API Reference / Error Codes 등 표준 목차를 제안 \n   (2) [Authentication]: \n       '인증'은 첫 장벽임. [입력 정보 1]을 기반으로 API 키 발급/사용법을 단계별로 명확히 설명 \n   (3) [Quickstart (5분)]: \n       [입력 정보 2]의 핵심 기능을 cURL/Python/JS 3가지 언어로 '복사+붙여넣기' 가능한 예제 코드로 작성 \n   (4) [API Reference]: \n       [입력 정보 3]의 '주요 기능'별 엔드포인트/Parameter/Request/Response 템플릿 설계 \n   (5) [Error Codes]: \n       '주요 오류' 3-5개의 원인과 해결책(예: 401-인증 실패, 404-리소스 없음)을 명시 \n\n🔹 [산출물 형식] \n   GitBook/Notion에 게시 가능한, 가독성 높은 마크다운 템플릿 \n   모든 예제는 코드 블록으로 처리 \n\n--- \n🔹 [입력 정보] \n   1. 인증 방식: [예: Bearer Token] \n   2. Quickstart용 핵심 기능: [예: GET /v1/users/{id}] \n   3. 주요 기능들: [예: 사용자 생성, 주문 생성]",
+                    desc: "개발자 여정 중심 설계, 5분 내 첫 호출 목표"
+                }
+            },
+            "AI 활용방안 탐구": {
+                basic: {
+                    text: `"우리 팀에서 AI를 어떻게 활용할 수 있을지 아이디어를 제안해주세요. 현재 업무에서 AI로 개선할 수 있는 영역들을 알려주세요."`,
+                    desc: "기본적인 AI 활용 아이디어 요청"
+                },
+                intermediate: {
+                    text: `"HR 팀의 AI 활용 방안을 제안해주세요. 현재 주요 업무는 채용 관리, 직원 평가, 교육 프로그램 운영이고, 주요 문제점은 반복 작업이 많고 시간이 부족하다는 것입니다. AI로 개선 가능한 업무 5가지를 선정하고 각각의 기대 효과를 제시해주세요. 도입이 쉽고 효과가 빠른 것부터 우선순위를 정해서 단계별로 제안해주세요."`,
+                    desc: "구체적 상황 제시, 우선순위 고려"
+                },
+                advanced: {
+                    text: "🔸 [페르소나] \n   15년 차 HR 혁신 컨설턴트/HR Tech 전문가 \n   비효율적인 HR 반복 업무를 진단하고 'Quick Win' 1순위 과제를 도출하는 전문가 \n\n🔸 [문제] \n   HR 부서에서 일함 \n   채용/평가/온보딩 등 모든 영역이 수동/반복적임 \n   AI를 '어디서부터' 적용해야 할지, '어떤 업무'가 효과가 클지 막막함 \n\n🔸 [맥락] \n   목표는 '미래의 AI'가 아닌 '오늘의 실행 과제'임 \n   이번 분기 내 시간을 절약할 수 있는 현실적이고 즉각적인 AI 활용 방안 1~3가지를 찾고 있음 \n\n🔸 [산출물] \n   [입력 정보]를 진단하여, AI로 개선 효과(ROI)가 가장 높은 'Top 3 개선 영역'과 \n   '가장 쉬운 솔루션'이 포함된 'HR 업무 AI 혁신 진단 리포트' \n\n🔸 [작업절차] \n   (1) [현 업무 진단]: \n       [입력 정보]를 3가지 기준(반복성, 규칙성, 시간 소모도)으로 평가 \n   (2) [Top 3 영역 선정]: \n       'Quick Win'과 'High Impact' 기준으로 Top 3 영역을 선정 \n   (3) [As-Is -> To-Be 제안]: \n       선정된 Top 3 영역 각각의 '현재 문제(As-Is)', 'AI 해결 방식(To-Be)', \n       '가장 쉬운 솔루션(예: ChatGPT, Copilot)'을 구체적으로 제안 \n\n🔸 [산출물 형식] \n   1. Top 3 AI 개선 영역 요약 \n   2. 영역별 상세 진단 및 솔루션 제안 (테이블 형식) \n\n--- \n🔸 [입력 정보: 우리 HR팀의 현재 주요 업무] \n   1. 채용: [예: 이력서 검토 및 합/불 메일 수동 발송 (주 10시간)] \n   2. 평가/보상: [예: 연말 성과 데이터 엑셀 수동 취합] \n   3. 온보딩: [예: 신규 입사자 대상 사내 규정/툴 사용법 반복 설명] \n   4. 기타: [예: 법정의무교육 이수 현황 수동 체크 및 독려]",
+                    desc: "진단 템플릿 기반, Quick Win 중심 제안"
+                }
+            },
+            "팀 활동 아이디어": {
+                basic: {
+                    text: `"우리 팀 분위기 개선을 위한 팀 빌딩 활동 아이디어를 제안해주세요. 팀원들이 즐겁게 참여할 수 있는 활동들을 알려주세요."`,
+                    desc: "기본적인 팀 활동 아이디어 요청"
+                },
+                intermediate: {
+                    text: `"20명 규모의 팀을 위한 팀 빌딩 활동을 기획해주세요. 목표는 팀원 간 소통 강화와 업무 스트레스 해소이고, 2-3시간 소요 예정이며 인당 5만원 예산입니다. 봄철에 진행할 예정이니 계절을 고려해서 5가지 활동 옵션을 제시하고, 각 활동의 장단점과 예상 효과를 함께 설명해주세요."`,
+                    desc: "구체적 조건 제시, 다양한 옵션 비교"
+                },
+                advanced: {
+                    text: "🔷 [페르소나] \n   '조직 문화/팀 빌딩' 전문 퍼실리테이터 \n   '억지 회식'이 아닌 '자발적 참여'와 '심리적 안정감'을 유도하는 이벤트 설계 전문가 \n\n🔷 [문제] \n   '팀 분위기 개선'을 위해 '즐거운' 활동이 필요함 \n   하지만 '즐거움'의 기준이 모호하고 'E/I 성향'이 달라, \n   '업무의 연장'이나 '일부만 즐거운' 행사가 될까 봐 걱정됨 \n\n🔷 [맥락] \n   목표는 '억지로 친해지기'가 아님 \n   '자연스러운 소통'과 '심리적 안정감' 구축이 목표 \n   '업무 탈출'이 핵심 \n\n🔷 [산출물] \n   E/I 성향 모두가 '자발적으로' 만족할 수 있는 \n   '팀 빌딩 활동 아이디어 및 실행 전략' \n\n🔷 [작업절차] \n   (1) [활동 카테고리화 제안]: \n       '최소한의 부담'을 주는 3가지 카테고리(예: 학습형, 활동형, 휴식형)를 제안 \n   (2) [카테고리별 아이디어 제안]: \n       각 카테고리별 '실패 확률 낮은' 구체적인 아이디어 3~5개 제안 \n   (3) ['실패하지 않는' 실행 전략]: \n       'Top-Down'이 아닌 'Bottom-up' 방식(예: 익명 투표, 업무 시간 보장, 자율 참여)으로 \n       팀원이 직접 선택하게 하는 전략을 제안 \n\n🔷 [산출물 형식] \n   1. 카테고리 및 아이디어 리스트 (테이블) \n   2. 핵심 실행 전략",
+                    desc: "억지스러움 제거, 자발적 참여 유도, 심리적 안정감 목표"
+                }
+            },
+            "프레젠테이션 구성": {
+                basic: {
+                    text: `"신제품 소개를 위한 프레젠테이션을 구성해주세요. 어떤 순서로 어떤 내용을 포함하면 좋을지 제안해주세요."`,
+                    desc: "기본적인 프레젠테이션 구성 요청"
+                },
+                intermediate: {
+                    text: `"잠재 고객 50명 대상 신제품 소개 프레젠테이션(20분)을 구성해주세요. 슬라이드는 15장 이내로 제한하고, 문제 제기 → 솔루션 소개 → 차별점 → 데모 → 가격 정책 → 행동 유도 순서로 구성해주세요. 청중의 관심을 끌 수 있는 스토리텔링 요소와 각 섹션별 핵심 메시지를 포함해서 전체적인 흐름을 설계해주세요."`,
+                    desc: "구조화된 구성, 청중 고려"
+                },
+                advanced: {
+                    text: "🔶 [페르소나] \n   15년 차 L&D/AI 트랜스포메이션 전문가 \n   60분/10명 소규모 그룹의 '인터랙티브 워크숍' 설계 전문가 \n\n🔶 [문제] \n   60분/10명 대상 AI 멘토링 킥오프 구성 필요 \n   일방적 강의는 '첫인상'을 망침 \n   60분 안에 '참여'와 '핵심 전달'을 담는 법이 막막함 \n\n🔶 [맥락] \n   목표는 '지식 전달'이 아님 \n   '공감(Buy-in)'과 '기대감'이 핵심 \n   '듣는 시간'은 최소화, '실습'은 극대화해야 함 \n\n🔶 [산출물] \n   60분간 10명이 몰입하고 실습하는 \n   'AI 멘토링 킥오프 워크숍 상세 아젠다' \n\n🔶 [작업절차] \n   (1) [Icebreaking (10분)]: \n       AI 실패 경험 공유. '질문의 문제' 공감대 형성 \n   (2) [The 'Why' (10분)]: \n       AI를 '신입' 아닌 '멘토'로 만드는 법. As-Is -> To-Be 목표 제시 \n   (3) [Core Workshop (30분)]: \n       핵심 실습 \n       (a) 자기 업무 'As-Is' 프롬프트 작성 \n       (b) 짝과 함께 'To-Be'로 개선 \n       (c) 2개 조 발표 및 실시간 피드백 \n   (4) [Wrap-up & Next Step (10분)]: \n       핵심 요약. 전체 프로그램 로드맵 및 1주차 과제 제시 \n\n🔶 [산출물 형식] \n   60분 타임라인 기반 아젠다 (테이블 형식) \n   시간별 '주요 활동'과 '핵심 메시지' 포함",
+                    desc: "일방적 강의가 아닌 워크숍 설계, 60분 시간 기반 아젠다 요구, 소그룹 특성 반영"
+                }
+            }
+        };
+
+        // 카테고리 분류
+        const promptCategories = {
+            "문서 및 커뮤니케이션": [
+                "이메일 작성", "회의록 작성 및 정리", "업무 보고서 작성", "문서 템플릿 생성",
+                "커뮤니케이션 전략수립", "대화/발표 스크립트 작성", "업무 매뉴얼 및 가이드 작성",
+                "공지/안내 자료 작성", "다국어 번역 및 현지화", "기술 문서 작성"
+            ],
+            "기획 및 전략": [
+                "프로토타입 만들기", "계획서 작성", "제안서 작성", "PRD(Product Requirement Document) 작성",
+                "업무 계획 수립", "리서치 계획수립", "예산 계획 수립", "커뮤니케이션 가이드라인 개발"
+            ],
+            "데이터 및 분석": [
+                "데이터 시각화 가이드", "데이터 분석 보고서 작성", "보고서 분석", "데이터 이상값 찾기",
+                "엑셀 등 BI 툴 활용방안 질문", "KPI 대시보드 설계", "피드백 감성 분석"
+            ],
+            "업무 최적화": [
+                "일정 요약 및 관리", "업무 흐름 개선", "업무 자동화 프로세스 개발", "반복성 작업 자동화",
+                "AI 활용방안 탐구"
+            ],
+            "평가 및 관리": [
+                "평가/채점 기준 설계", "성과 리뷰 작성", "계약서 검토", "정책 문서 작성"
+            ],
+            "콘텐츠 및 마케팅": [
+                "뉴스 검색 및 요약", "장문 문서 요약 및 핵심 추출", "비교 분석", "페르소나 생성",
+                "브리핑 자료 작성", "공고 작성", "설문 질문 생성", "콘텐츠 기획", "아티클 및 콘텐츠 글쓰기",
+                "홍보 문구 작성", "PR 자료 작성"
+            ],
+            "상담 및 교육": [
+                "코칭 및 상담", "교육 자료 개발", "FAQ 생성", "팀 활동 아이디어", "프레젠테이션 구성"
+            ]
+        };
+
+        let selectedUseCases = [];
+        let userLevels = {};
+        const maxSelection = 5;
+        let currentCategory = Object.keys(promptCategories)[0];
+        let bookmarkedPrompts = JSON.parse(localStorage.getItem('bookmarkedPrompts') || '[]');
+        let selectedForDownload = new Set();
+        let searchIndex = {};
+
+        // 검색 인덱스 생성
+        function createSearchIndex() {
+            searchIndex = {};
+
+            // 모든 사용 사례를 인덱스에 추가
+            useCases.forEach(useCase => {
+                const normalizedName = useCase.toLowerCase();
+                const words = normalizedName.split(/[\s\/]+/); // 공백과 슬래시로 분할
+
+                // 전체 이름
+                searchIndex[normalizedName] = useCase;
+
+                // 개별 단어들
+                words.forEach(word => {
+                    if (word.length > 0) {
+                        searchIndex[word] = useCase;
+                    }
+                });
+
+                // 부분 문자열 (2글자 이상)
+                for (let i = 0; i < normalizedName.length - 1; i++) {
+                    for (let j = i + 2; j <= normalizedName.length; j++) {
+                        const substring = normalizedName.substring(i, j);
+                        if (!searchIndex[substring]) {
+                            searchIndex[substring] = useCase;
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderUseCases() {
+            const grid = document.getElementById('useCasesGrid');
+            grid.innerHTML = '';
+
+            useCases.forEach((useCase, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'use-case-btn';
+                btn.textContent = useCase;
+                btn.onclick = () => toggleUseCaseSelection(index, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function toggleUseCaseSelection(index, btn) {
+            const useCase = useCases[index];
+
+            if (selectedUseCases.includes(useCase)) {
+                selectedUseCases = selectedUseCases.filter(item => item !== useCase);
+                btn.classList.remove('selected');
+            } else {
+                if (selectedUseCases.length < maxSelection) {
+                    selectedUseCases.push(useCase);
+                    btn.classList.add('selected');
+                }
+            }
+
+            updateStep1UI();
+        }
+        
+        function updateStep1UI() {
+            const counter = document.getElementById('counter');
+            const step1Btn = document.getElementById('step1Btn');
+            
+            counter.textContent = `선택된 항목: ${selectedUseCases.length} / ${maxSelection}`;
+            step1Btn.disabled = selectedUseCases.length === 0;
+            
+            const buttons = document.querySelectorAll('.use-case-btn');
+            buttons.forEach(btn => {
+                if (!btn.classList.contains('selected') && selectedUseCases.length >= maxSelection) {
+                    btn.classList.add('disabled');
+                    btn.style.pointerEvents = 'none';
+                } else {
+                    btn.classList.remove('disabled');
+                    btn.style.pointerEvents = 'auto';
+                }
+            });
+        }
+        
+        document.getElementById('step1Btn').onclick = function() {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            document.getElementById('step2').classList.add('active');
+            renderLevelSelection();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        
+        function renderLevelSelection() {
+            const container = document.getElementById('levelSelectionContainer');
+            container.innerHTML = '';
+            
+            selectedUseCases.forEach((useCase, index) => {
+                const levelItem = document.createElement('div');
+                levelItem.className = 'level-item';
+                
+                const title = document.createElement('h3');
+                title.textContent = `${index + 1}. ${useCase}`;
+                
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'level-buttons';
+                
+                // Create buttons with data attributes instead of inline onclick
+                [1, 2, 3].forEach(level => {
+                    const btn = document.createElement('button');
+                    btn.className = 'level-btn';
+                    btn.textContent = level === 1 ? '⭐ 기초' : level === 2 ? '⭐⭐ 중급' : '⭐⭐⭐ 고급';
+                    btn.dataset.usecase = useCase;
+                    btn.dataset.level = level;
+                    btn.onclick = function() {
+                        selectLevel(this.dataset.usecase, parseInt(this.dataset.level), this);
+                    };
+                    buttonsDiv.appendChild(btn);
+                });
+                
+                levelItem.appendChild(title);
+                levelItem.appendChild(buttonsDiv);
+                container.appendChild(levelItem);
+            });
+        }
+        
+        function selectLevel(useCase, level, btn) {
+            userLevels[useCase] = level;
+            
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            updateStep2UI();
+        }
+        
+        function updateStep2UI() {
+            const step2Btn = document.getElementById('step2Btn');
+            step2Btn.disabled = Object.keys(userLevels).length !== selectedUseCases.length;
+        }
+        
+        document.getElementById('step2Btn').onclick = function() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'block';
+            document.getElementById('step3').classList.add('active');
+            showResults();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        
+        function showResults() {
+            const totalScore = Object.values(userLevels).reduce((sum, level) => sum + level, 0);
+            const maxScore = selectedUseCases.length * 3;
+            
+            let levelInfo = {
+                badge: '',
+                title: '',
+                description: '',
+                badges: []
+            };
+            
+            if (totalScore <= selectedUseCases.length * 1.5) {
+                levelInfo = {
+                    badge: '🥉',
+                    title: 'AI 모험가',
+                    description: 'AI의 세계에 첫 발을 내디뎠어요! 🌱',
+                    badges: ['🎯 탐험 시작!']
+                };
+            } else if (totalScore <= selectedUseCases.length * 2.3) {
+                levelInfo = {
+                    badge: '🥈',
+                    title: 'AI 활용가',
+                    description: 'AI를 실무에 적용하고 계시네요! 🌿',
+                    badges: ['📚 꾸준한 학습자']
+                };
+            } else {
+                levelInfo = {
+                    badge: '🥇',
+                    title: 'AI 마스터',
+                    description: '팀의 AI 롤모델이 될 준비가 되었어요! 🌳',
+                    badges: ['🚀 고수', '💎 전문가']
+                };
+            }
+            
+            const level3Count = Object.values(userLevels).filter(l => l === 3).length;
+            if (level3Count >= 2) levelInfo.badges.push('🎯 고급 스킬러');
+            if (selectedUseCases.length === maxSelection) levelInfo.badges.push('💯 올라운더');
+            
+            const overallResult = document.getElementById('overallResult');
+            overallResult.innerHTML = `
+                <div class="level-badge">${levelInfo.badge}</div>
+                <h2>${levelInfo.title}</h2>
+                <div class="score-display">${totalScore} / ${maxScore}점</div>
+                <p style="font-size: 1.2em; margin-top: 10px;">${levelInfo.description}</p>
+                <div class="badges-container">
+                    ${levelInfo.badges.map(badge => `<div class="badge">${badge}</div>`).join('')}
+                </div>
+            `;
+            
+            const detailResults = document.getElementById('detailResults');
+            detailResults.innerHTML = '';
+            
+            selectedUseCases.forEach((useCase, index) => {
+                const userLevel = userLevels[useCase];
+                const exampleData = examples[useCase];
+                
+                if (!exampleData) return;
+                
+                const detailDiv = document.createElement('div');
+                detailDiv.className = 'detail-result';
+                
+                let levelStars = '';
+                for (let i = 1; i <= userLevel; i++) levelStars += '⭐';
+                
+                detailDiv.innerHTML = `
+                    <h3>
+                        ${index + 1}. ${useCase}
+                        <span class="current-level">현재 ${levelStars}</span>
+                    </h3>
+
+                    <div class="level-example ${userLevel === 1 ? 'current' : ''}">
+                        <h4>⭐ 기초 레벨 ${userLevel === 1 ? '(현재 당신의 레벨)' : ''}</h4>
+                        <div class="example-text">${exampleData.basic.text.replace(/\\n/g, '\n')}</div>
+                        <div class="description">${exampleData.basic.desc}</div>
+                    </div>
+
+                    <div class="level-example ${userLevel === 2 ? 'current' : ''}">
+                        <h4>⭐⭐ 중급 레벨 ${userLevel === 2 ? '(현재 당신의 레벨)' : userLevel === 1 ? '- 이렇게도 쓸 수 있어요!' : ''}</h4>
+                        <div class="example-text">${exampleData.intermediate.text.replace(/\\n/g, '\n')}</div>
+                        <div class="description">${exampleData.intermediate.desc}</div>
+                    </div>
+
+                    <div class="level-example ${userLevel === 3 ? 'current' : ''}">
+                        <h4>⭐⭐⭐ 고급 레벨 ${userLevel === 3 ? '(현재 당신의 레벨)' : '- 마스터는 이렇게!'}</h4>
+                        <div class="example-text">${exampleData.advanced.text.replace(/\\n/g, '\n')}</div>
+                        <div class="description">${exampleData.advanced.desc}</div>
+                    </div>
+                `;
+                
+                detailResults.appendChild(detailDiv);
+            });
+        }
+        
+        function exportResults() {
+            const totalScore = Object.values(userLevels).reduce((sum, level) => sum + level, 0);
+            const maxScore = selectedUseCases.length * 3;
+            
+            let exportText = '=== AI 활용 레벨 진단 결과 ===\n\n';
+            exportText += `작성일시: ${new Date().toLocaleString('ko-KR')}\n`;
+            exportText += `총점: ${totalScore} / ${maxScore}점\n\n`;
+            exportText += '='.repeat(50) + '\n\n';
+            
+            selectedUseCases.forEach((useCase, index) => {
+                const level = userLevels[useCase];
+                let levelText = level === 1 ? '⭐ 기초' : level === 2 ? '⭐⭐ 중급' : '⭐⭐⭐ 고급';
+                
+                exportText += `${index + 1}. ${useCase}\n`;
+                exportText += `현재 선택 레벨: ${levelText}\n\n`;
+                
+                // 각 레벨별 예시 추가
+                const exampleData = examples[useCase];
+                if (exampleData) {
+                    exportText += '【⭐ 기초 레벨】\n';
+                    exportText += `${exampleData.basic.text.replace(/\\n/g, '\n')}\n`;
+                    exportText += `→ ${exampleData.basic.desc}\n\n`;
+
+                    exportText += '【⭐⭐ 중급 레벨】\n';
+                    exportText += `${exampleData.intermediate.text.replace(/\\n/g, '\n')}\n`;
+                    exportText += `→ ${exampleData.intermediate.desc}\n\n`;
+
+                    exportText += '【⭐⭐⭐ 고급 레벨】\n';
+                    exportText += `${exampleData.advanced.text.replace(/\\n/g, '\n')}\n`;
+                    exportText += `→ ${exampleData.advanced.desc}\n\n`;
+                }
+                
+                exportText += '='.repeat(50) + '\n\n';
+            });
+            
+            const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI활용레벨진단_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+        }
+        
+        function resetForm() {
+            if (confirm('처음부터 다시 시작하시겠습니까? 작성한 내용이 모두 삭제됩니다.')) {
+                selectedUseCases = [];
+                userLevels = {};
+                
+                document.getElementById('step1').style.display = 'block';
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step2').style.display = 'none';
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step3').style.display = 'none';
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                renderUseCases();
+                updateStep1UI();
+            }
+        }
+        
+        // 프롬프트 사전 모달 관련 함수들
+        function showPromptGuide() {
+            const modal = document.getElementById('promptGuideModal');
+            modal.style.display = 'flex';
+            renderCategories();
+            renderPromptsByCategory();
+        }
+
+        function closePromptGuide() {
+            const modal = document.getElementById('promptGuideModal');
+            modal.style.display = 'none';
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoryButtons');
+            container.innerHTML = '';
+
+            Object.keys(promptCategories).forEach((category, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.textContent = `${category} (${promptCategories[category].length})`;
+                btn.onclick = () => selectCategory(category, btn);
+
+                if (index === 0) {
+                    btn.classList.add('active');
+                    currentCategory = category;
+                }
+
+                container.appendChild(btn);
+            });
+        }
+
+        function selectCategory(category, btn) {
+            // 이전 active 제거
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentCategory = category;
+            renderPromptsByCategory();
+        }
+
+        function renderPromptsByCategory() {
+            const container = document.getElementById('promptList');
+            container.innerHTML = '';
+
+            const categoryPrompts = promptCategories[currentCategory];
+            let displayedCount = 0;
+
+            categoryPrompts.forEach(useCase => {
+                const isBookmarked = bookmarkedPrompts.includes(useCase);
+
+                // 북마크 필터 적용
+                if (showBookmarksOnly && !isBookmarked) {
+                    return;
+                }
+
+                if (examples[useCase]) {
+                    const promptItem = createPromptItem(useCase);
+                    container.appendChild(promptItem);
+                    displayedCount++;
+                }
+            });
+
+            // 북마크 필터로 인해 표시할 항목이 없을 때 메시지 표시
+            if (showBookmarksOnly && displayedCount === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><h3>즐겨찾기한 프롬프트가 없습니다</h3><p>이 카테고리에서 ★ 버튼을 눌러 즐겨찾기를 추가해보세요.</p></div>';
+            }
+        }
+
+        function createPromptItem(useCase) {
+            const item = document.createElement('div');
+            item.className = 'prompt-item';
+            item.dataset.usecase = useCase.toLowerCase();
+
+            const isBookmarked = bookmarkedPrompts.includes(useCase);
+
+            const isSelected = selectedForDownload.has(useCase);
+
+            const safeId = useCase.replace(/[^a-zA-Z0-9]/g, '_');
+
+            item.innerHTML = `
+                <div class="prompt-header" data-usecase="${useCase}">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="checkbox-${safeId}"
+                               ${isSelected ? 'checked' : ''}
+                               data-usecase="${useCase}"
+                               style="transform: scale(1.2); cursor: pointer;">
+                        <h3 class="prompt-title">${useCase}</h3>
+                    </div>
+                    <div class="prompt-actions">
+                        <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}"
+                                data-usecase="${useCase}">
+                            ${isBookmarked ? '★' : '☆'}
+                        </button>
+                        <span>▼</span>
+                    </div>
+                </div>
+                <div class="prompt-details" id="details-${safeId}">
+                    ${renderPromptLevels(useCase)}
+                </div>
+            `;
+
+            // 이벤트 리스너 추가
+            const header = item.querySelector('.prompt-header');
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            const bookmarkBtn = item.querySelector('.bookmark-btn');
+
+            header.addEventListener('click', (e) => {
+                if (e.target !== checkbox && e.target !== bookmarkBtn) {
+                    togglePromptDetails(safeId);
+                }
+            });
+
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePromptSelection(useCase, checkbox);
+            });
+
+            bookmarkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleBookmark(useCase, bookmarkBtn);
+            });
+
+            return item;
+        }
+
+        function renderPromptLevels(useCase) {
+            const exampleData = examples[useCase];
+            if (!exampleData) return '';
+
+            return `
+                <div class="prompt-level basic">
+                    <h4>⭐ 기초 레벨</h4>
+                    <div class="prompt-text">${exampleData.basic.text.replace(/\\n/g, '\n')}</div>
+                    <div class="prompt-desc">${exampleData.basic.desc}</div>
+                </div>
+
+                <div class="prompt-level intermediate">
+                    <h4>⭐⭐ 중급 레벨</h4>
+                    <div class="prompt-text">${exampleData.intermediate.text.replace(/\\n/g, '\n')}</div>
+                    <div class="prompt-desc">${exampleData.intermediate.desc}</div>
+                </div>
+
+                <div class="prompt-level advanced">
+                    <h4>⭐⭐⭐ 고급 레벨</h4>
+                    <div class="prompt-text">${exampleData.advanced.text.replace(/\\n/g, '\n')}</div>
+                    <div class="prompt-desc">${exampleData.advanced.desc}</div>
+                </div>
+            `;
+        }
+
+        function togglePromptDetails(safeId) {
+            const details = document.getElementById(`details-${safeId}`);
+            if (!details) return;
+
+            const header = details.previousElementSibling;
+            const arrow = header.querySelector('.prompt-actions span');
+
+            if (details.classList.contains('active')) {
+                details.classList.remove('active');
+                arrow.textContent = '▼';
+            } else {
+                details.classList.add('active');
+                arrow.textContent = '▲';
+            }
+        }
+
+        function toggleBookmark(useCase, btn) {
+            const isCurrentlyBookmarked = bookmarkedPrompts.includes(useCase);
+
+            if (isCurrentlyBookmarked) {
+                bookmarkedPrompts = bookmarkedPrompts.filter(item => item !== useCase);
+                btn.classList.remove('bookmarked');
+                btn.textContent = '☆';
+            } else {
+                bookmarkedPrompts.push(useCase);
+                btn.classList.add('bookmarked');
+                btn.textContent = '★';
+            }
+
+            localStorage.setItem('bookmarkedPrompts', JSON.stringify(bookmarkedPrompts));
+        }
+
+        let showBookmarksOnly = false;
+
+        function filterPrompts() {
+            const searchTerm = document.getElementById('promptSearch').value.toLowerCase().trim();
+
+            // 검색어가 있으면 모든 카테고리에서 매칭되는 아이템 찾기
+            if (searchTerm) {
+                filterPromptsBySearch(searchTerm);
+            } else {
+                // 검색어가 없으면 현재 카테고리만 표시
+                renderPromptsByCategory();
+            }
+        }
+
+        function filterPromptsBySearch(searchTerm) {
+            const container = document.getElementById('promptList');
+            container.innerHTML = '';
+
+            const matchedUseCases = new Set();
+
+            // 검색 인덱스를 사용하여 매칭되는 사용 사례 찾기
+            Object.keys(searchIndex).forEach(key => {
+                if (key.includes(searchTerm)) {
+                    matchedUseCases.add(searchIndex[key]);
+                }
+            });
+
+            // 매칭된 사용 사례들을 표시
+            matchedUseCases.forEach(useCase => {
+                const isBookmarked = bookmarkedPrompts.includes(useCase);
+
+                // 북마크 필터 적용
+                if (showBookmarksOnly && !isBookmarked) {
+                    return;
+                }
+
+                if (examples[useCase]) {
+                    const promptItem = createPromptItem(useCase);
+                    container.appendChild(promptItem);
+                }
+            });
+
+            // 검색 결과가 없을 때 메시지 표시
+            if (matchedUseCases.size === 0 || (showBookmarksOnly && container.children.length === 0)) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><h3>검색 결과가 없습니다</h3><p>다른 검색어를 사용해보세요.</p></div>';
+            }
+        }
+
+        function showAllPrompts() {
+            showBookmarksOnly = false;
+            document.getElementById('showAllBtn').style.background = '#667eea';
+            document.getElementById('showAllBtn').style.color = 'white';
+            document.getElementById('showBookmarksBtn').style.background = '#f0f0f0';
+            document.getElementById('showBookmarksBtn').style.color = '#333';
+
+            // 검색어가 있으면 검색 결과 다시 필터링, 없으면 카테고리별 표시
+            const searchTerm = document.getElementById('promptSearch').value.toLowerCase().trim();
+            if (searchTerm) {
+                filterPrompts();
+            } else {
+                renderPromptsByCategory();
+            }
+        }
+
+        function showBookmarkedOnly() {
+            showBookmarksOnly = true;
+            document.getElementById('showAllBtn').style.background = '#f0f0f0';
+            document.getElementById('showAllBtn').style.color = '#333';
+            document.getElementById('showBookmarksBtn').style.background = '#ffd700';
+            document.getElementById('showBookmarksBtn').style.color = '#333';
+
+            // 검색어가 있으면 검색 결과 다시 필터링, 없으면 카테고리별 표시
+            const searchTerm = document.getElementById('promptSearch').value.toLowerCase().trim();
+            if (searchTerm) {
+                filterPrompts();
+            } else {
+                renderPromptsByCategory();
+            }
+        }
+
+        function togglePromptSelection(useCase, checkbox) {
+            if (checkbox.checked) {
+                selectedForDownload.add(useCase);
+            } else {
+                selectedForDownload.delete(useCase);
+            }
+            updateDownloadUI();
+        }
+
+        function updateDownloadUI() {
+            const count = selectedForDownload.size;
+            const countElement = document.getElementById('selectedCount');
+            const downloadBtn = document.getElementById('downloadSelectedBtn');
+
+            countElement.textContent = `선택된 프롬프트: ${count}개`;
+
+            if (count > 0) {
+                downloadBtn.disabled = false;
+                downloadBtn.style.opacity = '1';
+                downloadBtn.style.cursor = 'pointer';
+            } else {
+                downloadBtn.disabled = true;
+                downloadBtn.style.opacity = '0.5';
+                downloadBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function downloadSelectedPrompts() {
+            if (selectedForDownload.size === 0) {
+                alert('다운로드할 프롬프트를 선택해주세요.');
+                return;
+            }
+
+            let exportText = '=== 선택된 AI 프롬프트 모음 ===\n\n';
+            exportText += `작성일시: ${new Date().toLocaleString('ko-KR')}\n`;
+            exportText += `선택된 프롬프트 수: ${selectedForDownload.size}개\n\n`;
+            exportText += '='.repeat(60) + '\n\n';
+
+            let index = 1;
+            for (const useCase of selectedForDownload) {
+                const exampleData = examples[useCase];
+                if (exampleData) {
+                    exportText += `${index}. ${useCase}\n\n`;
+
+                    exportText += '【⭐ 기초 레벨】\n';
+                    exportText += `${exampleData.basic.text.replace(/\\n/g, '\n')}\n`;
+                    exportText += `→ ${exampleData.basic.desc}\n\n`;
+
+                    exportText += '【⭐⭐ 중급 레벨】\n';
+                    exportText += `${exampleData.intermediate.text.replace(/\\n/g, '\n')}\n`;
+                    exportText += `→ ${exampleData.intermediate.desc}\n\n`;
+
+                    exportText += '【⭐⭐⭐ 고급 레벨】\n';
+                    exportText += `${exampleData.advanced.text.replace(/\\n/g, '\n')}\n`;
+                    exportText += `→ ${exampleData.advanced.desc}\n\n`;
+
+                    exportText += '='.repeat(60) + '\n\n';
+                    index++;
+                }
+            }
+
+            const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `선택된_AI프롬프트_${selectedForDownload.size}개_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+
+            // 다운로드 후 선택 초기화 여부 묻기
+            if (confirm('다운로드가 완료되었습니다. 선택한 프롬프트를 모두 해제하시겠습니까?')) {
+                clearAllSelections();
+            }
+        }
+
+        function clearAllSelections() {
+            selectedForDownload.clear();
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateDownloadUI();
+        }
+
+        function downloadAllPrompts() {
+            if (!confirm('전체 프롬프트(50개)를 모두 다운로드하시겠습니까? 파일 크기가 클 수 있습니다.')) {
+                return;
+            }
+
+            let exportText = '=== AI 프롬프트 완전 사전 (전체 50개) ===\n\n';
+            exportText += `작성일시: ${new Date().toLocaleString('ko-KR')}\n`;
+            exportText += `총 프롬프트 수: ${useCases.length}개\n`;
+            exportText += `카테고리: ${Object.keys(promptCategories).length}개 분야\n\n`;
+            exportText += '='.repeat(60) + '\n\n';
+
+            // 카테고리별로 정렬해서 출력
+            Object.keys(promptCategories).forEach((category, categoryIndex) => {
+                exportText += `📂 ${categoryIndex + 1}. ${category}\n`;
+                exportText += '='.repeat(40) + '\n\n';
+
+                const categoryUseCases = promptCategories[category];
+                categoryUseCases.forEach((useCase, index) => {
+                    const exampleData = examples[useCase];
+                    if (exampleData) {
+                        exportText += `   ${index + 1}. ${useCase}\n\n`;
+
+                        exportText += '   【⭐ 기초 레벨】\n';
+                        exportText += `   ${exampleData.basic.text.replace(/\\n/g, '\n   ')}\n`;
+                        exportText += `   → ${exampleData.basic.desc}\n\n`;
+
+                        exportText += '   【⭐⭐ 중급 레벨】\n';
+                        exportText += `   ${exampleData.intermediate.text.replace(/\\n/g, '\n   ')}\n`;
+                        exportText += `   → ${exampleData.intermediate.desc}\n\n`;
+
+                        exportText += '   【⭐⭐⭐ 고급 레벨】\n';
+                        exportText += `   ${exampleData.advanced.text.replace(/\\n/g, '\n   ')}\n`;
+                        exportText += `   → ${exampleData.advanced.desc}\n\n`;
+
+                        exportText += '   ' + '-'.repeat(50) + '\n\n';
+                    }
+                });
+
+                exportText += '\n' + '='.repeat(60) + '\n\n';
+            });
+
+            // 파일 다운로드
+            const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI프롬프트_완전사전_전체50개_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+
+            alert('전체 프롬프트 사전 다운로드가 완료되었습니다!');
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePromptGuide();
+            }
+        });
+
+        // 페이지 로드 완료 후 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            // 검색 인덱스 생성
+            createSearchIndex();
+            renderUseCases();
+        });
+    </script>
+</body>
+</html>
